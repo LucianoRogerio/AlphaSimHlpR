@@ -6,9 +6,9 @@
 #' @param bsp A list of breeding scheme parameters
 #' @param SP The AlphaSimR SimParam object
 #' @return A records object with a new F1 Pop-class object of progeny coming out of a population improvement scheme
-#' 
+#'
 #' @details This function uses penotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
-#' 
+#'
 #' @examples
 #' bsp <- specifyPipeline()
 #' bsp <- specifyPopulation(bsp)
@@ -18,7 +18,7 @@
 #' records <- initList$records
 #' records <- productPipeline(records, bsp, SP)
 #' records <- popImprov1(records, bsp, SP)
-#' 
+#'
 #' @export
 popImprov1Cyc <- function(records, bsp, SP){
   # Include current year phenotypes for model training?
@@ -35,7 +35,7 @@ popImprov1Cyc <- function(records, bsp, SP){
     progeny <- optContrib(records, bsp, SP, crit)
   } else{
     parents <- records$F1[candidates[order(crit, decreasing=T)[1:bsp$nParents]]]
-    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreSexes=T, simParam=SP)
+    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreGender=T, simParam=SP)
   }
   progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
   parentsUsed <- unique(c(progeny@mother, progeny@father))
@@ -57,12 +57,12 @@ popImprov1Cyc <- function(records, bsp, SP){
 #' @param id String id use in AlphaSimR
 #' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
 #' @return Integer vector with the stage and cycle where the id was found or c(NA, NA)
-#' 
+#'
 #' @details Goes through the records to find the last time id was phenotyped
-#' 
+#'
 #' @examples
 #' stgCyc <- whereIsID(id, records)
-#' 
+#'
 whereIsID <- function(id, records){
   found <- FALSE
   stage <- length(records)
@@ -91,9 +91,9 @@ whereIsID <- function(id, records){
 #' @param bsp List of breeding scheme parameters
 #' @param SP The AlphaSimR SimParam object
 #' @return A records object with the F1 Pop-class object updated with new progeny coming out of a population improvement scheme
-#' 
+#'
 #' @details This function uses penotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
-#' 
+#'
 #' @examples
 #' bsp <- specifyPipeline()
 #' bsp <- specifyPopulation(bsp)
@@ -103,7 +103,7 @@ whereIsID <- function(id, records){
 #' records <- initList$records
 #' records <- prodPipeSimp(records, bsp, SP)
 #' records <- popImprov2Cyc(records, bsp, SP)
-#' 
+#'
 #' @export
 popImprov2Cyc <- function(records, bsp, SP){
   # Don't include current year (if specified) for the first cycle
@@ -119,7 +119,7 @@ popImprov2Cyc <- function(records, bsp, SP){
     candidates <- records$F1@id
     crit <- bsp$selCritPopImprov(trainRec, candidates, bsp, SP)
     parents <- records$F1[candidates[order(crit, decreasing=T)[1:bsp$nParents]]]
-    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreSexes=T, simParam=SP)
+    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreGender=T, simParam=SP)
     records$F1 <- c(records$F1, progeny)
     useCurrentPhenoTrain <- TRUE
   }
@@ -138,7 +138,7 @@ popImprov2Cyc <- function(records, bsp, SP){
 #' @param crit Named vector of selection criterion to be maximized
 #' @return Pop class object with the progeny from optimum contribution crosses
 #' @details Calculate a grm of individuals with high enough crit, then maximize crit subject to a target increase of relatedness consistent with bsp$targetEffPopSize
-#' @examples 
+#' @examples
 #' crit <- bv(records$F1); names(crit) <- records$F1@id
 #' progeny <- optContrib(records, bsp, SP, crit)
 #' @export

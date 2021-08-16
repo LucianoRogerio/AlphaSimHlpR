@@ -1,10 +1,10 @@
 #' initFuncSimp function
 #'
 #' Deprecated function to initialize simulation of a breeding program
-#' 
+#'
 #' @param bsp A list of breeding scheme parameters
 #' @return The return of \code{initializeScheme}
-#' 
+#'
 #' @details Deprecated in favor of the simply-named \code{initializeScheme}
 #'
 #' @export
@@ -16,10 +16,10 @@ initFuncSimp <- function(bsp){
 #' initFuncADChk function
 #'
 #' Deprecated function to initialize simulation of a breeding program
-#' 
+#'
 #' @param bsp A list of breeding scheme parameters
 #' @return The return of \code{initializeScheme}
-#' 
+#'
 #' @details Deprecated in favor of the simply-named \code{initializeScheme}
 #'
 #' @export
@@ -31,12 +31,12 @@ initFuncADChk <- function(bsp){
 #' initializeScheme function
 #'
 #' function to initialize simulation of a breeding program. A single additive-dominance trait is simulated. Check are used in this scheme
-#' 
-#' @param bsp A list of breeding scheme parameters.  See \code{specifyPipeline} and \code{specifyPopulation} 
+#'
+#' @param bsp A list of breeding scheme parameters.  See \code{specifyPipeline} and \code{specifyPopulation}
 #' @return A list containing: 1. The simulation parameters in \code{SP}; 2. The initial records of the breeding program in \code{records}. See \code{fillPipeline} for details; 3. A completed \code{bsp} object
-#' 
+#'
 #' @details Creates the founders and the initial records at the beginning of the simulation of a breeding program.
-#' 
+#'
 #' @examples
 #' bsp <- specifyPopulation(bsp)
 #' bsp <- specifyPipeline()
@@ -54,7 +54,7 @@ initializeScheme <- function(bsp){
   } else{
     founderHap <- runMacs2(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites, Ne=bsp$effPopSize)
   }
-  
+
   # New global simulation parameters from founder haplotypes
   SP <- SimParam$new(founderHap)
   SP$restrSegSites(minQtlPerChr=1, minSnpPerChr=10, overlap=FALSE)
@@ -62,16 +62,16 @@ initializeScheme <- function(bsp){
   SP$addTraitADE(nQtlPerChr=bsp$nQTL, var=bsp$genVar, meanDD=bsp$meanDD, varDD=bsp$varDD, relAA=bsp$relAA, useVarA=FALSE)
   # Observed SNPs per chromosome
   SP$addSnpChip(bsp$nSNP)
-  
+
   founders <- newPop(founderHap, simParam=SP)
   if (any(bsp$nChks > 0)){
     bsp$checks <- selectInd(founders, nInd=max(bsp$nChks), use="rand", simParam=SP)
     # remove checks from founders
     founders <- founders[-which(founders@id %in% bsp$checks@id)]
   } else bsp$checks <- NULL
-  
+
   records <- fillPipeline(founders, bsp, SP)
-  
+
   return(list(SP=SP, records=records, bsp=bsp))
 }
 
@@ -82,9 +82,9 @@ initializeScheme <- function(bsp){
 #' @param founders Pop-class object of the founders of the breeding program
 #' @param bsp A list of product pipeline parameters. See \code{runBreedingScheme} for details
 #' @return A \code{records} object. A list of lists containing nStages+1 lists. The first list contains one Pop-class of progeny per year of the scheme. The remaining lists contain one matrix per year that has individual id, mother, father, stage, phenotypes, and error variances. The individuals have been phenotyped using \code{setPheno}. The matrix may contain a mix of experimental and check phenotypes with different levels of replication
-#' 
+#'
 #' @details This is a structure for a records object that will be used to simulate breeding schemes
-#' 
+#'
 #' @examples
 #' bsp <- specifyPipeline()
 #' bsp <- specifyPopulation(bsp)
@@ -96,7 +96,7 @@ initializeScheme <- function(bsp){
 #' founders <- newPop(founderHap, simParam=SP)
 #' bsp <- c(bsp, checks=list(NULL))
 #' records <- fillPipeline(founders, bsp, SP)
-#' 
+#'
 #' @export
 fillPipeline <- function(founders, bsp=NULL, SP){
   nF1 <- bsp$nCrosses * bsp$nProgeny
@@ -126,12 +126,12 @@ fillPipeline <- function(founders, bsp=NULL, SP){
       }
       toAdd <- c(toAdd, list(phenoRec))
     }#END stages
-    
+
     # Make the next F1s with mild selection using gv
     lastGen <- nInd(records[[1]]) - nF1 + 1:nF1
     parents <- selectInd(records[[1]][lastGen], nInd=nF1/1.5, use="gv", simParam=SP)
-    toAdd <- c(list(randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreSexes=T, simParam=SP)), toAdd)
-    
+    toAdd <- c(list(randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreGender=T, simParam=SP)), toAdd)
+
     # Actually fill the records
     records[[1]] <- c(records[[1]], toAdd[[1]])
     for (i in 2:length(toAdd)){
