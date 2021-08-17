@@ -13,9 +13,9 @@ runBreedingScheme_wBurnIn(
   selCritPopPost,
   selCritPipePre = "selCritIID",
   selCritPipePost = "selCritIID",
-  initializeFunc,
-  productPipeline,
-  populationImprovement,
+  initializeFunc = initializeFunc,
+  productPipeline = productPipeline,
+  populationImprovement = popImprov1Cyc,
   nBLASthreads = NULL,
   nThreadsMacs2 = NULL
 )

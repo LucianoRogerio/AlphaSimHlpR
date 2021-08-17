@@ -29,8 +29,9 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
                                       selCritPopPre,selCritPopPost,
                                       selCritPipePre="selCritIID",
                                       selCritPipePost="selCritIID",
-                                      initializeFunc,
-                                      productPipeline,populationImprovement,
+                                      initializeFunc=initializeFunc,
+                                      productPipeline=productPipeline,
+                                      populationImprovement=popImprov1Cyc,
                                       nBLASthreads=NULL,nThreadsMacs2=NULL){
 
   on.exit(expr={print(traceback()); saveRDS(mget(ls()), file="~/runBreedingScheme.rds")})
