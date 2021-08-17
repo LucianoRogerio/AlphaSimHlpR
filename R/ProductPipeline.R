@@ -3,7 +3,7 @@
 #' @param bsp A list of breeding scheme parameters
 #' @param SP the AlphaSimR SimParam object
 #' @return The return from \code{productPipeline}
-#' 
+#'
 #' @details Function deprecated in favor of the simply named \code{productPipeline}
 #' @export
 prodPipeFncChk <- function(records, bsp, SP){
@@ -19,9 +19,9 @@ prodPipeFncChk <- function(records, bsp, SP){
 #' @param bsp A list of breeding scheme parameters
 #' @param SP the AlphaSimR SimParam object
 #' @return A records object that has new records created by advancing by a generation
-#' 
+#'
 #' @details The breeding program product pipeline will have been set by initializeFunc. This function moves the breeding program along by one generation and saves all the resulting phenotypes to the records object.
-#' 
+#'
 #' @examples
 #' bsp <- specifyPipeline()
 #' bsp <- specifyPopulation(bsp)
@@ -40,7 +40,7 @@ productPipeline <- function(records, bsp, SP){
 
   # Make summary for the incoming F1s
   year <- max(records$stageOutputs$year)+1 # Add a year relative to last year
-  nF1 <- bsp$nCrosses * bsp$nProgeny 
+  nF1 <- bsp$nCrosses * bsp$nProgeny
   nGenoRec <- nInd(records$F1)
   # Analyze the most-recent F1s
   newF1Idx <- nGenoRec - nF1 + 1:nF1
@@ -108,12 +108,12 @@ productPipeline <- function(records, bsp, SP){
 #' @param year The current year of the breeding scheme
 #' @param bsp A list of breeding scheme parameters
 #' @return A tibble with whatever information from the data you want to store for analysis after simulation is done
-#' 
+#'
 #' @details Trying to provide some flexibility in what results AlphaSimHlpR generates from a given simulation.
-#' 
+#'
 #' @examples
 #' records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id, records$F1, selCrit, stage, year, bsp))
-#' 
+#'
 stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
   stageName <- c("F1", bsp$stageNames)[stage+1]
   f1 <- f1[id]
@@ -137,9 +137,9 @@ stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
 #' @param bsp A list of breeding scheme parameters
 #' @param SP the AlphaSimR SimParam object
 #' @return A records object that has updated stageOutputs
-#' 
+#'
 #' @details Will figure this out later...
-#' 
+#'
 #' @examples
 #' records <- lastCycStgOut(records, bsp, SP)
 lastCycStgOut <- function(records, bsp, SP){
@@ -151,19 +151,19 @@ lastCycStgOut <- function(records, bsp, SP){
   # Calculate the selection criterion. selCritPipeAdv has to be given in bsp
   candidates <- records$F1@id
   selCrit <- bsp$selCritPipeAdv(records, candidates, bsp, SP)
-  
+
   # Make summary for the incoming F1s
-  nF1 <- bsp$nCrosses * bsp$nProgeny 
+  nF1 <- bsp$nCrosses * bsp$nProgeny
   nGenoRec <- nInd(records$F1)
   newF1Idx <- nGenoRec - nF1 + 1:nF1
   id <- records$F1[newF1Idx]@id
   records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
-  
+
   for (stage in 1:bsp$nStages){
     # Make a summary for this stage
     id <- last(records[[stage+1]])$id[1:bsp$nEntries[stage]]
     records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=stage, year=year, bsp=bsp))
   }
-  
+
   return(records)
 }
