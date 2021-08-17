@@ -1,5 +1,5 @@
 #' packages installed at the machine
-#' 
+#'
 
 ip <- as.data.frame(installed.packages())$Package
 
@@ -12,10 +12,10 @@ ip <- as.data.frame(installed.packages())$Package
 #' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
 #' @return Real matrix with breeding program cycles in rows and product pipeline stages in columns, each cell being the mean genotypic value for that year and stage
 #' @details The records object is a list of lists of populations. This function takes those lists and returns the poplation means in a matrix
-#' 
+#'
 #' @examples
 #' recordMeans <- mean_records(records)
-#' 
+#'
 #' @export
 mean_records <- function(records){
   chkID <- records$bsp$checks@id
@@ -29,10 +29,10 @@ mean_records <- function(records){
 #' @param arrayList The list of arrays to which the function will be applied
 #' @param fnc The function that can be applied to a vector
 #' @return Array of the function values
-#' 
+#'
 #' @examples
 #' cellMeans <- elementWise(lapply(replicRecords, mean_records))
-#' 
+#'
 #' @export
 elementWise <- function(arrayList, fnc=mean){
   arDim <- dim(arrayList[[1]])
@@ -48,10 +48,10 @@ elementWise <- function(arrayList, fnc=mean){
 #' @param bsp The breeding scheme parameter list
 #' @return A data.frame of phenotypic records with four columns: 1. The id of individuals; 2. The trial type of the phenotype record; 3. The year the observation was recorded; 4. The phenotypic value
 #' @details \code{records} is a list of lists of populations and is primarily useful for maintaining the phenotypic observations across years and stages. For analysis, you need just the phenotypes in a matrix with relevant independent values
-#' 
+#'
 #' @examples
 #' phenoDF <- framePhenoRec(records, bsp)
-#' 
+#'
 #' @export
 framePhenoRec <- function(records, bsp){
   allPheno <- tibble()
@@ -74,10 +74,10 @@ framePhenoRec <- function(records, bsp){
 #' @param checks Whether this was a population of experimentals or checks. Necessary to determine the degree of replication
 #' @return A tibble of phenotypic records with six columns: 1. The id, 2. The id of the mother, 3. The id of the father, 4. The name of the stage, 5. The actual phenotype, 6. The error variance of the phenotype
 #' @details The tibbles coming from this function will be incorporated into \code{records} useful for maintaining the phenotypic observations across years and stages. For analysis, you need these phenotypes coupled to their ids and error variances
-#' 
+#'
 #' @examples
 #' phenoDF <- phenoRecFromPop(pop, bsp, stage)
-#' 
+#'
 #' @export
 phenoRecFromPop <- function(pop, bsp, stage, checks=FALSE){
   # Entries and replicates have different numbers of stages
@@ -90,21 +90,27 @@ phenoRecFromPop <- function(pop, bsp, stage, checks=FALSE){
 
 #' makeGRM function
 #'
-#' function to make a genomic relationship matrix to be used to analyze the phenotypic \code{records}
+#' function to make a genomic relationship matrix to be used to analyze the
+#' phenotypic \code{records}
 #'
-#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param records The breeding program \code{records} object. See
+#'   \code{fillPipeline} for details
 #' @param bsp The breeding scheme parameter list
 #' @param SP The AlphaSimR SimParam object. Needed to pull the SNP genotypes
 #' @return A genomic relationship matrix
-#' @details \code{records} maintains the phenotypic and genotypic records across years and stages. For GEBV analysis, you need the GRM of these individuals. \code{makeGRM} assumes the first phenotyping stage (records[[2]]) has all individuals that have been phenotyped. The GRM also includes the unphenotyped new F1 individuals in records[[1]]
-#' 
+#' @details \code{records} maintains the phenotypic and genotypic records across
+#'   years and stages. For GEBV analysis, you need the GRM of these individuals.
+#'   \code{makeGRM} assumes the first phenotyping stage (records[[2]]) has all
+#'   individuals that have been phenotyped. The GRM also includes the
+#'   unphenotyped new F1 individuals in records[[1]]
+#'
 #' @examples
 #' grm <- makeGRM(records, bsp, SP)
-#' 
+#'
 #' @export
 makeGRM <- function(records, bsp, SP){
   require(sommer)
-  
+
   allPop <- records$F1
   # Only make GRM of individuals that are specified in the TP
   allID <- NULL
@@ -128,7 +134,7 @@ makeGRM <- function(records, bsp, SP){
   if (!is.null(bsp$checks)) allID <- setdiff(allID, bsp$checks@id)
   allID <- allID[order(as.integer(allID))]
   allPop <- allPop[allID]
-  
+
   if (!is.null(bsp$checks)){
     putInChks <- setdiff(bsp$checks@id, allPop@id)
     if (length(putInChks > 0)) allPop <- c(allPop, bsp$checks[putInChks])
@@ -143,11 +149,11 @@ makeGRM <- function(records, bsp, SP){
 #' @param phenoDF A data.frame of phenotypic observations. See \code{framePhenoRec} for details.
 #' @return Named real vector of the BLUPs of all individuals in phenoDF (names are the individual ids), with appropriate weights by error variance of the observation
 #' @details Given all the phenotypic records calculate the best prediction of the genotypic value for each individual using all its records
-#' 
+#'
 #' @examples
 #' phenoDF <- framePhenoRec(records, bsp)
 #' iidBLUPs <- iidPhenoEval(phenoDF)
-#' 
+#'
 #' @export
 iidPhenoEval <- function(phenoDF){
   require(lme4)
@@ -174,14 +180,14 @@ iidPhenoEval <- function(phenoDF){
 #' @param grm A genomic relationship matrix
 #' @return Named real vector of the BLUPs of all individuals in phenoDF (names are the individual ids), with appropriate weights by error variance of the observation
 #' @details Given all the phenotypic records calculate the GEBV for each individual using all its records
-#' 
+#'
 #' @examples
 #' phenoDF <- framePhenoRec(records, bsp)
 #' grm <- makeGRM(records, bsp, SP)
 #' grmBLUPs <- grmPhenoEval(phenoDF, grm)
-#' 
+#'
 #' @export
- 
+
 
 grmPhenoEval <- function(phenoDF, grm){
   if("asreml"%in%ip) {
@@ -191,7 +197,7 @@ grmPhenoEval <- function(phenoDF, grm){
            residual = ~ units,
            weights = wgt,
            data = phenoDF, na.method.X = "omit")
-  blup <- summary(fm, coef = T)$coef.random$solution 
+  blup <- summary(fm, coef = T)$coef.random$solution
   } else {
   require(sommer)
   phenoDF$id <- factor(phenoDF$id, levels=rownames(grm)) # Enable prediction
@@ -225,17 +231,17 @@ grmPhenoEval <- function(phenoDF, grm){
 #' @param SP The AlphaSimR SimParam object (not used, here for uniformity)
 #' @return An IID BLUP of the trait of the candidates
 #' @details Accesses all individuals in \code{records} to pick the highest among candidates. If candidates do not have records, a random sample is returned
-#' 
+#'
 #' @examples
 #' allPop <- mergePops(records[[2]])
 #' candidates <- allPop@id
 #' parents <- allPop[selCritIID(records, candidates, bsp, SP)]
-#' 
+#'
 #' @export
 selCritIID <- function(records, candidates, bsp, SP){
   phenoDF <- framePhenoRec(records, bsp)
   # Candidates don't have phenotypes so return random vector
-  if (!any(candidates %in% phenoDF$id)){ 
+  if (!any(candidates %in% phenoDF$id)){
     crit <- runif(length(candidates))
   } else{
     crit <- iidPhenoEval(phenoDF)
@@ -255,14 +261,14 @@ selCritIID <- function(records, candidates, bsp, SP){
 #' @param SP The AlphaSimR SimParam object (needed to pull SNPs)
 #' @return Character vector of the ids of the selected individuals
 #' @details Accesses all individuals in \code{records} to pick the highest ones
-#' @examples 
+#' @examples
 #' candidates <- records[[1]][[1]]@id
 #' parents <- records[[1]][[1]][selCritGRM(records, candidates, bsp, SP)]
-#' 
+#'
 #' @export
 selCritGRM <- function(records, candidates, bsp, SP){
   grm <- makeGRM(records, bsp, SP)
-  if (!any(candidates %in% rownames(grm))){ 
+  if (!any(candidates %in% rownames(grm))){
     crit <- runif(length(candidates))
   } else{
     phenoDF <- framePhenoRec(records, bsp)
