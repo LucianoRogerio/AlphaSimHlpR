@@ -1,3 +1,80 @@
+#' Run a breeding scheme including a burn-in period
+#'
+#' Allows users to switch selection critera after a designated set of cycles and continue for additional cycles.
+#' Use case envisioned is to run phenotypic selection for an initial period and then switch to e.g. GS.
+#' Adds a few other bells and whistles to the original \code{runBreedingScheme} function.
+#'
+#' @param replication Integer replication of running the breeding scheme
+#' @param bsp  A list of breeding scheme parameters.
+#' @param nBurnInCycles Integer number of cycles to as 'burn-in' using the \code{selCritPopPre} and \code{selCritPipePre} settings.
+#' @param nPostBurnInCycles Integer number of cycles to as 'burn-in' using the \code{selCritPopPost} and \code{selCritPipePost} settings.
+#' @param initializeFunc Function to initialize the breeding program.
+#' @param productPipeline Function to advance the product pipeline by one generation
+#' @param populationImprovement Function to improve the breeding population and select parents to initiate the next cycle of the breeding scheme
+#' @param nBLASthreads number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.
+#' @param nThreadsMacs2 uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.
+#' @param selCritPopPre string, overrides the selCrit in \code{bsp} for the burn-in stage.
+#' @param selCritPopPost string, overrides the selCrit in \code{bsp} for the burn-in stage.
+#' @param selCritPipePre string, overrides the selCrit in \code{bsp} for the burn-in stage. DEFAULT: selCritIID
+#' @param selCritPipePost string, overrides the selCrit in \code{bsp} for the burn-in stage. DEFAULT: selCritIID
+#' @return A \code{records} object containing the phenotypic records retained of the breeding scheme
+#'
+#' @details A wrapper to initiate the breeding program then iterate cycles of product pipeline and population improvement
+#' @export
+runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
+                                      nBurnInCycles,nPostBurnInCycles,
+                                      selCritPopPre,selCritPopPost,
+                                      selCritPipePre="selCritIID",
+                                      selCritPipePost="selCritIID",
+                                      initializeFunc,
+                                      productPipeline,populationImprovement,
+                                      nBLASthreads=NULL,nThreadsMacs2=NULL){
+
+  on.exit(expr={print(traceback()); saveRDS(mget(ls()), file="~/runBreedingScheme.rds")})
+
+  if(!is.null(nBLASthreads)) { RhpcBLASctl::blas_set_num_threads(nBLASthreads) }
+
+  cat("******", replication, "\n")
+
+  # This initiates the founding population
+  initList <- initializeFunc(bsp,nThreads=nThreadsMacs2)
+  SP <- initList$SP
+  bsp <- initList$bsp
+  records <- initList$records
+
+  ## set the selection criteria for burn-in
+  bsp[["selCritPipeAdv"]] <- get(selCritPipePre)
+  bsp[["selCritPopImprov"]] <- get(selCritPopPre)
+
+  # Burn-in cycles
+  cat("\n"); cat("Burn-in cycles"); cat("\n")
+  for (cycle in 1:nBurnInCycles){
+    cat(cycle, " ")
+    records <- productPipeline(records, bsp, SP)
+    records <- populationImprovement(records, bsp, SP)
+  }
+
+  ## set the selection critera for post-burn in
+  bsp[["selCritPipeAdv"]] <- get(selCritPipePost)
+  bsp[["selCritPopImprov"]] <- get(selCritPopPost)
+
+  # Post burn-in cycles
+  cat("\n"); cat("Post burn-in cycles"); cat("\n")
+  for (cycle in (nBurnInCycles+1):(nBurnInCycles+nPostBurnInCycles)){
+    cat(cycle, " ")
+    records <- productPipeline(records, bsp, SP)
+    records <- populationImprovement(records, bsp, SP)
+  }
+
+  # Finalize the stageOutputs
+  records <- lastCycStgOut(records, bsp, SP)
+
+  on.exit()
+  return(list(records=records,
+              bsp=bsp,
+              SP=SP))
+}
+
 #' parentSelCritGEBV function
 #'
 #' \code{parentSelCritGEBV} will compute GEBV of all genotyped individuals using all available phenotypes.
