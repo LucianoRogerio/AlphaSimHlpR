@@ -4,10 +4,12 @@
 \alias{initializeScheme}
 \title{initializeScheme function}
 \usage{
-initializeScheme(bsp)
+initializeScheme(bsp, nThreads = NULL)
 }
 \arguments{
 \item{bsp}{A list of breeding scheme parameters.  See \code{specifyPipeline} and \code{specifyPopulation}}
+
+\item{nThreads}{uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.}
 }
 \value{
 A list containing: 1. The simulation parameters in \code{SP}; 2. The initial records of the breeding program in \code{records}. See \code{fillPipeline} for details; 3. A completed \code{bsp} object

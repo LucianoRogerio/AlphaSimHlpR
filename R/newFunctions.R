@@ -20,6 +20,9 @@
 #' @return A \code{records} object containing the phenotypic records retained of the breeding scheme
 #'
 #' @details A wrapper to initiate the breeding program then iterate cycles of product pipeline and population improvement
+#'
+#' @examples
+
 #' @export
 runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
                                       nBurnInCycles,nPostBurnInCycles,
@@ -92,9 +95,8 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
 #' @param SP The AlphaSimR SimParam object (needed to pull SNPs)
 #' @return Character vector of the ids of the selected individuals
 #' @details Accesses all individuals in \code{records} to pick the highest ones
+#'
 #' @examples
-#' candidates <- records[[1]][[1]]@id
-#' parents <- records[[1]][[1]][selCritGRM(records, candidates, bsp, SP)]
 #'
 #' @export
 parentSelCritGEBV <- function(records, candidates, bsp, SP){
@@ -137,6 +139,9 @@ parentSelCritGEBV <- function(records, candidates, bsp, SP){
 #'   \code{makeGRM} assumes the first phenotyping stage (records[[2]]) has all
 #'   individuals that have been phenotyped. The GRM also includes the
 #'   unphenotyped new F1 individuals in records[[1]]
+#'
+#' @examples
+
 #' @export
 make_grm <- function(records, bsp, SP, grmType="add"){
 
@@ -184,10 +189,7 @@ make_grm <- function(records, bsp, SP, grmType="add"){
 #' @details Given all the phenotypic records calculate the GEBV for each individual using all its records
 #'
 #' @examples
-#' phenoDF <- framePhenoRec(records, bsp)
-#' grm <- makeGRM(records, bsp, SP)
-#' grmBLUPs <- gebvPhenoEval(phenoDF, grm)
-#'
+
 #' @export
 gebvPhenoEval <- function(phenoDF, grm){
     require(sommer)

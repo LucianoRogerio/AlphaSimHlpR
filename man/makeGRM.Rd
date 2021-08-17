@@ -7,7 +7,8 @@
 makeGRM(records, bsp, SP)
 }
 \arguments{
-\item{records}{The breeding program \code{records} object. See \code{fillPipeline} for details}
+\item{records}{The breeding program \code{records} object. See
+\code{fillPipeline} for details}
 
 \item{bsp}{The breeding scheme parameter list}
 
@@ -17,10 +18,15 @@ makeGRM(records, bsp, SP)
 A genomic relationship matrix
 }
 \description{
-function to make a genomic relationship matrix to be used to analyze the phenotypic \code{records}
+function to make a genomic relationship matrix to be used to analyze the
+phenotypic \code{records}
 }
 \details{
-\code{records} maintains the phenotypic and genotypic records across years and stages. For GEBV analysis, you need the GRM of these individuals. \code{makeGRM} assumes the first phenotyping stage (records[[2]]) has all individuals that have been phenotyped. The GRM also includes the unphenotyped new F1 individuals in records[[1]]
+\code{records} maintains the phenotypic and genotypic records across
+  years and stages. For GEBV analysis, you need the GRM of these individuals.
+  \code{makeGRM} assumes the first phenotyping stage (records[[2]]) has all
+  individuals that have been phenotyped. The GRM also includes the
+  unphenotyped new F1 individuals in records[[1]]
 }
 \examples{
 grm <- makeGRM(records, bsp, SP)

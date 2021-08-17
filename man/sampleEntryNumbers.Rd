@@ -4,7 +4,7 @@
 \alias{sampleEntryNumbers}
 \title{sampleEntryNumbers function}
 \usage{
-sampleEntryNumbers(bsp, targetBudget, percentRanges, nAttempts = 5)
+sampleEntryNumbers(bsp, targetBudget, percentRanges, nAttempts = 50)
 }
 \arguments{
 \item{bsp}{A list of objects to combine with the species and population parameters. bsp is short for breeding sheme parameters}

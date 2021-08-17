@@ -1,0 +1,8 @@
+pandoc: 2.11.4
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  AlphaSimHlpR_Manual: AlphaSimHlpR_Manual.html
+  Using_AlphaSimHlpR: Using_AlphaSimHlpR.html
+last_built: 2021-08-17T13:45Z
+

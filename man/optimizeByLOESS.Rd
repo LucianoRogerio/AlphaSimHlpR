@@ -6,10 +6,10 @@
 \usage{
 optimizeByLOESS(
   batchSize,
-  nByPareto = round(batchSize * 0.7),
   targetBudget,
   percentRanges,
   startCycle,
+  wgtPopImprov,
   tolerance,
   baseDir = NULL,
   maxNumBatches = 10,
@@ -17,7 +17,7 @@ optimizeByLOESS(
   productPipeline,
   populationImprovement,
   bsp,
-  randomSeed = 1234,
+  randomSeed = NULL,
   nCores = 1
 )
 }
@@ -29,6 +29,8 @@ optimizeByLOESS(
 \item{percentRanges}{Numeric matrix (nStages + 1 rows and 2 columns) of percentage budget allocation to crossing (F1) and all of the stages.  If there is a stage that is genotyped, the genotyping cost is added to that stage}
 
 \item{startCycle}{Integer the start cycle from which to measure gain. The end cycle will be the last cycle. Set the startCycle so there is enough burn-in}
+
+\item{wgtPopImprov}{Two components contribute to the utility: yearly population improvement and yearly gain in the product development. This is the weight for the first. The other has weight 1 - wgtPopImprov}
 
 \item{tolerance}{Numerical difference between min amd max percentage budgets for all stages}
 
@@ -52,7 +54,7 @@ optimizeByLOESS(
 Numeric matix with all simulations budget allocations, gen mean change, gen std dev change, total cost.
 }
 \description{
-function to optimize a two-part strategy breeding scheme:
+Function to optimize a two-part strategy breeding scheme:
 1. Simulate a batch using given percentage ranges
 2. Perform LOESS fit to the gains
 3. Find budget with best estimated gain

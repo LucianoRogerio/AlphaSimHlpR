@@ -4,12 +4,14 @@
 \alias{getParmsResponse}
 \title{getParmsResponse function}
 \usage{
-getParmsResponse(oneSim, startCycle)
+getParmsResponse(oneSim, startCycle, wgtPopImprov = 1)
 }
 \arguments{
 \item{oneSim}{Output of runBreedingScheme}
 
 \item{startCycle}{Integer first cycle after burn-in is done}
+
+\item{wgtPopImprov}{Two components contribute to the utility: yearly population improvement and yearly gain in the product development. This is the weight for the first. The other has weight 1 - wgtPopImprov}
 }
 \description{
 Utility function for optimizeByLOESS
