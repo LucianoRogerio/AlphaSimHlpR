@@ -98,7 +98,7 @@
       <a href="../articles/AlphaSimHlpR_Manual.html">AlphaSimHlpR Manual</a>
     </li>
     <li>
-      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR to simulate a breeding program with AlphaSimR</a>
+      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR</a>
     </li>
   </ul>
 </li>
@@ -127,7 +127,7 @@
     <p>function to initialize simulation of a breeding program. A single additive-dominance trait is simulated. Check are used in this scheme</p>
     </div>
 
-    <pre class="usage"><span class='fu'>initializeScheme</span><span class='op'>(</span><span class='va'>bsp</span>, nThreads <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>initializeScheme</span><span class='op'>(</span><span class='va'>bsp</span>, nThreadsForMacs <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -137,7 +137,7 @@
       <td><p>A list of breeding scheme parameters.  See <code>specifyPipeline</code> and <code>specifyPopulation</code></p></td>
     </tr>
     <tr>
-      <th>nThreads</th>
+      <th>nThreadsForMacs</th>
       <td><p>uses the nThreads argument in <code>runMacs2</code>, parallelizes founder sim by chrom.</p></td>
     </tr>
     </table>

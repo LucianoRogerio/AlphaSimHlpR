@@ -6,53 +6,59 @@
 \usage{
 specifyBSP(
   schemeDF,
-  nParents,
-  nCrosses,
-  nProgeny,
-  useOptContrib = FALSE,
-  nCandOptCont = NULL,
-  targetEffPopSize = NULL,
-  useCurrentPhenoTrain = TRUE,
-  nCyclesToKeepRecords,
-  selCritPipeAdv,
-  selCritPopImprov,
   nChr,
   effPopSize,
+  quickHaplo = FALSE,
   segSites,
   nQTL,
   nSNP,
   genVar,
-  gxeVar,
-  meanDD,
-  varDD
+  gxeVar = NULL,
+  gxyVar = NULL,
+  gxlVar = NULL,
+  gxyxlVar = NULL,
+  meanDD = 0,
+  varDD = 0,
+  relAA = 0,
+  stageToGenotype,
+  nParents,
+  nCrosses,
+  nProgeny,
+  usePolycrossNursery = FALSE,
+  nSeeds = NULL,
+  useOptContrib = FALSE,
+  nCandOptCont = NULL,
+  targetEffPopSize = NULL,
+  nClonesToNCRP,
+  phenoF1toStage1 = FALSE,
+  errVarPreStage1 = NULL,
+  useCurrentPhenoTrain = FALSE,
+  nCyclesToKeepRecords,
+  selCritPipeAdv,
+  selCritPopImprov
 )
 }
 \arguments{
-\item{schemeDF}{data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars}
-
-\item{nParents}{integer number of parents to cross}
-
-\item{nCrosses}{integer how many crosses to make}
-
-\item{nProgeny}{integer how many progeny per cross}
-
-\item{useOptContrib}{logical whether to use optimal contributions}
-
-\item{nCandOptCont}{integer how many candidates to consider for opt contrib}
-
-\item{targetEffPopSize}{numeric target effective population size for OC}
-
-\item{useCurrentPhenoTrain}{logical whether to use phenotypes for parent sel}
-
-\item{nCyclesToKeepRecords}{integer eliminate data on cycles above this num}
-
-\item{selCritPipeAdv}{function used to determine selection criterion for pipe}
-
-\item{selCritPopImprov}{function used to determine sel crit for pop improv}
+\item{schemeDF}{data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
+\itemize{
+ \item \code{stageNames}: Vector of number of number of entries in each stage
+ \item \code{nReps}: Vector of number of reps used in each stage
+ \item \code{nLocs}: Vector of number of locations used in each stage
+ \item \code{nChks}: Vector of number of checks used in each stage. Checks are replicated the same as experimental entries
+ \item \code{nEntries}: Vector of number of number of entries in each stage
+ \item \code{entryToChkRatio}: How many entry plots do you have per check plot
+ \item \code{errVars}: Vector of error variances estimated from historical data
+ \item \code{trainingPopCycles}: How many cycles back to keep records from
+ each stage in the training population. More cycles means bigger training
+ population but also more distant from the selection candidates.
+ Fewer cycles means the simulation runs faster
+}}
 
 \item{nChr}{integer number of chromosomes for the species}
 
 \item{effPopSize}{numeric historic effective population size for the species}
+
+\item{quickHaplo}{T/F, Whether to use the AlphaSimR "quickHaplo" feature. It is less realistic but greatly accelerates the creation of founders. Useful for quick tests.}
 
 \item{segSites}{integer number of sites segregating per chromosome}
 
@@ -64,9 +70,52 @@ specifyBSP(
 
 \item{gxeVar}{numeric genotype by environment variance of the founders}
 
+\item{gxyVar}{genotype-by-year variance}
+
+\item{gxlVar}{genotype-by-location variance}
+
+\item{gxyxlVar}{genotype-by-location-by-year variance}
+
 \item{meanDD}{numeric mean dominance deviation. Set to zero for additive}
 
 \item{varDD}{numeric variance across loci of their dominance deviation}
+
+\item{relAA}{from AlphaSimR "the relative value of additive-by-additive variance compared to additive variance in a diploid organism with allele frequency 0.5"}
+
+\item{stageToGenotype}{At what stage do you want to genotype individuals?  In addition to the
+named stages (SDN, CET, and PYT in this control file), the user can
+specify F1, which will cause all nCrosses * nProgeny individuals to be
+genotyped. If nothing is specified, the default will be to genotype all F1.}
+
+\item{nParents}{integer number of parents to cross}
+
+\item{nCrosses}{integer how many crosses to make}
+
+\item{nProgeny}{integer how many progeny per cross}
+
+\item{usePolycrossNursery}{T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating}
+
+\item{nSeeds}{Parameter to determine the number of seeds only if usePolycrossNursery TRUE}
+
+\item{useOptContrib}{logical whether to use optimal contributions}
+
+\item{nCandOptCont}{integer how many candidates to consider for opt contrib}
+
+\item{targetEffPopSize}{numeric target effective population size for OC}
+
+\item{nClonesToNCRP}{Number of clones that will be sent to NCRP for potential variety release}
+
+\item{phenoF1toStage1}{T/F. Parameters to control how seeds are moved from F1 to the Stage 1 trial}
+
+\item{errVarPreStage1}{Parameters to control how seeds are moved from F1 to the Stage 1 trial}
+
+\item{useCurrentPhenoTrain}{T/F. Are the current year phenotypes available for model training. when parents are chosen to send to the crossing nursery?}
+
+\item{nCyclesToKeepRecords}{integer eliminate data on cycles above this num}
+
+\item{selCritPipeAdv}{function used to determine selection criterion for pipe}
+
+\item{selCritPopImprov}{function used to determine sel crit for pop improv}
 }
 \value{
 a named list of of the parameters to specify a breeding scheme simulation
@@ -80,25 +129,5 @@ Ideally this is useful for programmatically varying breeding schemes.
 All arguments are exactly as specified in the control files. Main exception is schemeDF, which is just a tibble() or data.frame version of the set of bsp arguments which are vectors (giving values for each breeding stage). Columns must have names exactly as in the corresponding arguments in control file: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
 }
 \examples{
-schemeDF <- tibble(stageNames=c("SDN", "CET", "PYT"),
-                 nReps=c(1, 1, 2),
-                 nLocs=c(1, 1, 2),
-                 nChks=c(1, 1, 2),
-                 nEntries=c(100, 50, 20),
-                 entryToChkRatio=c(50, 20, 10),
-                 errVars=c(150,75,40))
-bsp <- specifyBSP(schemeDF,nParents = 10, nCrosses = 10, nProgeny = 10,
-                useOptContrib = FALSE,
-                useCurrentPhenoTrain = TRUE,
-                nCyclesToKeepRecords = 1,
-                selCritPipeAdv = selCritGRM,
-                selCritPopImprov = selCritGRM,
-                nChr = 2,effPopSize = 50,
-                segSites = 100, nQTL = 5, nSNP = 10,
-                genVar = 50, gxeVar = 0, meanDD = 0.05, varDD = 0.25)
-test <- runBreedingScheme(replication = 1,nCycles = 1,
-                        initializeFunc = initFuncADChk,
-                        productPipeline = prodPipeFncChk,
-                        populationImprovement = popImprov1Cyc,
-                        bsp = bsp)
+
 }

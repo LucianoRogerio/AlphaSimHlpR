@@ -98,7 +98,7 @@
       <a href="../articles/AlphaSimHlpR_Manual.html">AlphaSimHlpR Manual</a>
     </li>
     <li>
-      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR to simulate a breeding program with AlphaSimR</a>
+      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR</a>
     </li>
   </ul>
 </li>
@@ -159,7 +159,7 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>phenoDF</span> <span class='op'>&lt;-</span> <span class='fu'>phenoRecFromPop</span><span class='op'>(</span><span class='va'>pop</span>, <span class='va'>bsp</span>, <span class='va'>stage</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in if_else(checks, bsp$chkReps[stage], bsp$nReps[stage]): object 'bsp' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in if_else(checks, bsp$chkReps[stage], as.numeric(bsp$nReps[stage])): object 'bsp' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

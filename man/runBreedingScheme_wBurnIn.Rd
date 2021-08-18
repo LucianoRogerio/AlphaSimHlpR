@@ -13,9 +13,9 @@ runBreedingScheme_wBurnIn(
   selCritPopPost,
   selCritPipePre = "selCritIID",
   selCritPipePost = "selCritIID",
-  initializeFunc = initializeFunc,
-  productPipeline = productPipeline,
-  populationImprovement = popImprov1Cyc,
+  iniFunc = "initializeScheme",
+  productFunc = "productPipeline",
+  popImprovFunc = "popImprov1Cyc",
   nBLASthreads = NULL,
   nThreadsMacs2 = NULL
 )
@@ -37,15 +37,15 @@ runBreedingScheme_wBurnIn(
 
 \item{selCritPipePost}{string, overrides the selCrit in \code{bsp} for the burn-in stage. DEFAULT: selCritIID}
 
+\item{nBLASthreads}{number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.}
+
+\item{nThreadsMacs2}{uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.}
+
 \item{initializeFunc}{Function to initialize the breeding program.}
 
 \item{productPipeline}{Function to advance the product pipeline by one generation}
 
 \item{populationImprovement}{Function to improve the breeding population and select parents to initiate the next cycle of the breeding scheme}
-
-\item{nBLASthreads}{number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.}
-
-\item{nThreadsMacs2}{uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.}
 }
 \value{
 A \code{records} object containing the phenotypic records retained of the breeding scheme

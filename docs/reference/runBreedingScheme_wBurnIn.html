@@ -100,7 +100,7 @@ Adds a few other bells and whistles to the original runBreedingScheme function."
       <a href="../articles/AlphaSimHlpR_Manual.html">AlphaSimHlpR Manual</a>
     </li>
     <li>
-      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR to simulate a breeding program with AlphaSimR</a>
+      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR</a>
     </li>
   </ul>
 </li>
@@ -140,9 +140,9 @@ Adds a few other bells and whistles to the original <code>runBreedingScheme</cod
   <span class='va'>selCritPopPost</span>,
   selCritPipePre <span class='op'>=</span> <span class='st'>"selCritIID"</span>,
   selCritPipePost <span class='op'>=</span> <span class='st'>"selCritIID"</span>,
-  <span class='va'>initializeFunc</span>,
-  <span class='va'>productPipeline</span>,
-  <span class='va'>populationImprovement</span>,
+  iniFunc <span class='op'>=</span> <span class='st'>"initializeScheme"</span>,
+  productFunc <span class='op'>=</span> <span class='st'>"productPipeline"</span>,
+  popImprovFunc <span class='op'>=</span> <span class='st'>"popImprov1Cyc"</span>,
   nBLASthreads <span class='op'>=</span> <span class='cn'>NULL</span>,
   nThreadsMacs2 <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
@@ -183,6 +183,14 @@ Adds a few other bells and whistles to the original <code>runBreedingScheme</cod
       <td><p>string, overrides the selCrit in <code>bsp</code> for the burn-in stage. DEFAULT: selCritIID</p></td>
     </tr>
     <tr>
+      <th>nBLASthreads</th>
+      <td><p>number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.</p></td>
+    </tr>
+    <tr>
+      <th>nThreadsMacs2</th>
+      <td><p>uses the nThreads argument in <code>runMacs2</code>, parallelizes founder sim by chrom.</p></td>
+    </tr>
+    <tr>
       <th>initializeFunc</th>
       <td><p>Function to initialize the breeding program.</p></td>
     </tr>
@@ -193,14 +201,6 @@ Adds a few other bells and whistles to the original <code>runBreedingScheme</cod
     <tr>
       <th>populationImprovement</th>
       <td><p>Function to improve the breeding population and select parents to initiate the next cycle of the breeding scheme</p></td>
-    </tr>
-    <tr>
-      <th>nBLASthreads</th>
-      <td><p>number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.</p></td>
-    </tr>
-    <tr>
-      <th>nThreadsMacs2</th>
-      <td><p>uses the nThreads argument in <code>runMacs2</code>, parallelizes founder sim by chrom.</p></td>
     </tr>
     </table>
 

@@ -1,11 +1,11 @@
 ---
-title: "Using AlphaSimHlpR to simulate a breeding program with AlphaSimR"
+title: "Using AlphaSimHlpR"
 author: 
 - Jean-Luc Jannink
 date: "2020-01-05"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using AlphaSimHlpR}
+  %\VignetteIndexEntry{Using_AlphaSimHlpR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-AlphaSimR is a package with many useful functions to simulate plant and animal breeding schemes. But it is not very easy to implement. AlfSimHlpR defines functions that provide structure for a breeding scheme 
+AlphaSimR is a package with many useful functions to simulate plant and animal breeding schemes. But it is not very easy to implement. AlfSimHlpR defines functions that provide structure for a breeding scheme
 
 ## Using AlfSimHlpR
 
@@ -29,7 +29,9 @@ suppressMessages(library(AlphaSimHlpR))
 ```
 
 ### Define simulation settings
+
 Define the genetic architecture of the population and other breeding scheme parameters in a list `bsp`.
+
 ```{r Define Population}
 bsp <- specifyPopulation(ctrlFileName="../inst/PopulationCtrlFile_Small.txt")
 bsp <- specifyPipeline(bsp, ctrlFileName="../inst/ControlFile_Small.txt")
@@ -41,13 +43,17 @@ bsp$nCyclesToRun <- 6
 ```
 
 ### Run a simple breeding scheme for `r bsp$nCyclesToRun` cycles
-Replicate a very simple breeding program `r nReplications` times. 
+
+Replicate a very simple breeding program `r nReplications` times.
+
 ```{r Replicate Scheme}
 replicRecords <- lapply(1:nReplications, runBreedingScheme, nCycles=bsp$nCyclesToRun, initializeFunc=initFuncADChk, productPipeline=prodPipeFncChk, populationImprovement=popImprov1Cyc, bsp)
 ```
 
 ### Calculate the means of the breeding programs
+
 And plot them out
+
 ```{r Calculate means}
 plotData <- plotRecords(replicRecords)
 meanMeans <- tapply(plotData$genValMean, list(plotData$year, plotData$stage), mean)

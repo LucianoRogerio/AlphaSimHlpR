@@ -100,7 +100,7 @@ Ideally this is useful for programmatically varying breeding schemes." />
       <a href="../articles/AlphaSimHlpR_Manual.html">AlphaSimHlpR Manual</a>
     </li>
     <li>
-      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR to simulate a breeding program with AlphaSimR</a>
+      <a href="../articles/Using_AlphaSimHlpR.html">Using AlphaSimHlpR</a>
     </li>
   </ul>
 </li>
@@ -133,25 +133,36 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
 
     <pre class="usage"><span class='fu'>specifyBSP</span><span class='op'>(</span>
   <span class='va'>schemeDF</span>,
-  <span class='va'>nParents</span>,
-  <span class='va'>nCrosses</span>,
-  <span class='va'>nProgeny</span>,
-  useOptContrib <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  nCandOptCont <span class='op'>=</span> <span class='cn'>NULL</span>,
-  targetEffPopSize <span class='op'>=</span> <span class='cn'>NULL</span>,
-  useCurrentPhenoTrain <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  <span class='va'>nCyclesToKeepRecords</span>,
-  <span class='va'>selCritPipeAdv</span>,
-  <span class='va'>selCritPopImprov</span>,
   <span class='va'>nChr</span>,
   <span class='va'>effPopSize</span>,
+  quickHaplo <span class='op'>=</span> <span class='cn'>FALSE</span>,
   <span class='va'>segSites</span>,
   <span class='va'>nQTL</span>,
   <span class='va'>nSNP</span>,
   <span class='va'>genVar</span>,
-  <span class='va'>gxeVar</span>,
-  <span class='va'>meanDD</span>,
-  <span class='va'>varDD</span>
+  gxeVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  gxyVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  gxlVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  gxyxlVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  meanDD <span class='op'>=</span> <span class='fl'>0</span>,
+  varDD <span class='op'>=</span> <span class='fl'>0</span>,
+  relAA <span class='op'>=</span> <span class='fl'>0</span>,
+  <span class='va'>stageToGenotype</span>,
+  <span class='va'>nParents</span>,
+  <span class='va'>nCrosses</span>,
+  <span class='va'>nProgeny</span>,
+  usePolycrossNursery <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  nSeeds <span class='op'>=</span> <span class='cn'>NULL</span>,
+  useOptContrib <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  nCandOptCont <span class='op'>=</span> <span class='cn'>NULL</span>,
+  targetEffPopSize <span class='op'>=</span> <span class='cn'>NULL</span>,
+  <span class='va'>nClonesToNCRP</span>,
+  phenoF1toStage1 <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  errVarPreStage1 <span class='op'>=</span> <span class='cn'>NULL</span>,
+  useCurrentPhenoTrain <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>nCyclesToKeepRecords</span>,
+  <span class='va'>selCritPipeAdv</span>,
+  <span class='va'>selCritPopImprov</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -159,47 +170,19 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>schemeDF</th>
-      <td><p>data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars</p></td>
-    </tr>
-    <tr>
-      <th>nParents</th>
-      <td><p>integer number of parents to cross</p></td>
-    </tr>
-    <tr>
-      <th>nCrosses</th>
-      <td><p>integer how many crosses to make</p></td>
-    </tr>
-    <tr>
-      <th>nProgeny</th>
-      <td><p>integer how many progeny per cross</p></td>
-    </tr>
-    <tr>
-      <th>useOptContrib</th>
-      <td><p>logical whether to use optimal contributions</p></td>
-    </tr>
-    <tr>
-      <th>nCandOptCont</th>
-      <td><p>integer how many candidates to consider for opt contrib</p></td>
-    </tr>
-    <tr>
-      <th>targetEffPopSize</th>
-      <td><p>numeric target effective population size for OC</p></td>
-    </tr>
-    <tr>
-      <th>useCurrentPhenoTrain</th>
-      <td><p>logical whether to use phenotypes for parent sel</p></td>
-    </tr>
-    <tr>
-      <th>nCyclesToKeepRecords</th>
-      <td><p>integer eliminate data on cycles above this num</p></td>
-    </tr>
-    <tr>
-      <th>selCritPipeAdv</th>
-      <td><p>function used to determine selection criterion for pipe</p></td>
-    </tr>
-    <tr>
-      <th>selCritPopImprov</th>
-      <td><p>function used to determine sel crit for pop improv</p></td>
+      <td><p>data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars</p><ul>
+<li><p><code>stageNames</code>: Vector of number of number of entries in each stage</p></li>
+<li><p><code>nReps</code>: Vector of number of reps used in each stage</p></li>
+<li><p><code>nLocs</code>: Vector of number of locations used in each stage</p></li>
+<li><p><code>nChks</code>: Vector of number of checks used in each stage. Checks are replicated the same as experimental entries</p></li>
+<li><p><code>nEntries</code>: Vector of number of number of entries in each stage</p></li>
+<li><p><code>entryToChkRatio</code>: How many entry plots do you have per check plot</p></li>
+<li><p><code>errVars</code>: Vector of error variances estimated from historical data</p></li>
+<li><p><code>trainingPopCycles</code>: How many cycles back to keep records from
+ each stage in the training population. More cycles means bigger training
+ population but also more distant from the selection candidates.
+ Fewer cycles means the simulation runs faster</p></li>
+</ul></td>
     </tr>
     <tr>
       <th>nChr</th>
@@ -208,6 +191,10 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
     <tr>
       <th>effPopSize</th>
       <td><p>numeric historic effective population size for the species</p></td>
+    </tr>
+    <tr>
+      <th>quickHaplo</th>
+      <td><p>T/F, Whether to use the AlphaSimR "quickHaplo" feature. It is less realistic but greatly accelerates the creation of founders. Useful for quick tests.</p></td>
     </tr>
     <tr>
       <th>segSites</th>
@@ -230,12 +217,95 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
       <td><p>numeric genotype by environment variance of the founders</p></td>
     </tr>
     <tr>
+      <th>gxyVar</th>
+      <td><p>genotype-by-year variance</p></td>
+    </tr>
+    <tr>
+      <th>gxlVar</th>
+      <td><p>genotype-by-location variance</p></td>
+    </tr>
+    <tr>
+      <th>gxyxlVar</th>
+      <td><p>genotype-by-location-by-year variance</p></td>
+    </tr>
+    <tr>
       <th>meanDD</th>
       <td><p>numeric mean dominance deviation. Set to zero for additive</p></td>
     </tr>
     <tr>
       <th>varDD</th>
       <td><p>numeric variance across loci of their dominance deviation</p></td>
+    </tr>
+    <tr>
+      <th>relAA</th>
+      <td><p>from AlphaSimR "the relative value of additive-by-additive variance compared to additive variance in a diploid organism with allele frequency 0.5"</p></td>
+    </tr>
+    <tr>
+      <th>stageToGenotype</th>
+      <td><p>At what stage do you want to genotype individuals?  In addition to the
+named stages (SDN, CET, and PYT in this control file), the user can
+specify F1, which will cause all nCrosses * nProgeny individuals to be
+genotyped. If nothing is specified, the default will be to genotype all F1.</p></td>
+    </tr>
+    <tr>
+      <th>nParents</th>
+      <td><p>integer number of parents to cross</p></td>
+    </tr>
+    <tr>
+      <th>nCrosses</th>
+      <td><p>integer how many crosses to make</p></td>
+    </tr>
+    <tr>
+      <th>nProgeny</th>
+      <td><p>integer how many progeny per cross</p></td>
+    </tr>
+    <tr>
+      <th>usePolycrossNursery</th>
+      <td><p>T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating</p></td>
+    </tr>
+    <tr>
+      <th>nSeeds</th>
+      <td><p>Parameter to determine the number of seeds only if usePolycrossNursery TRUE</p></td>
+    </tr>
+    <tr>
+      <th>useOptContrib</th>
+      <td><p>logical whether to use optimal contributions</p></td>
+    </tr>
+    <tr>
+      <th>nCandOptCont</th>
+      <td><p>integer how many candidates to consider for opt contrib</p></td>
+    </tr>
+    <tr>
+      <th>targetEffPopSize</th>
+      <td><p>numeric target effective population size for OC</p></td>
+    </tr>
+    <tr>
+      <th>nClonesToNCRP</th>
+      <td><p>Number of clones that will be sent to NCRP for potential variety release</p></td>
+    </tr>
+    <tr>
+      <th>phenoF1toStage1</th>
+      <td><p>T/F. Parameters to control how seeds are moved from F1 to the Stage 1 trial</p></td>
+    </tr>
+    <tr>
+      <th>errVarPreStage1</th>
+      <td><p>Parameters to control how seeds are moved from F1 to the Stage 1 trial</p></td>
+    </tr>
+    <tr>
+      <th>useCurrentPhenoTrain</th>
+      <td><p>T/F. Are the current year phenotypes available for model training. when parents are chosen to send to the crossing nursery?</p></td>
+    </tr>
+    <tr>
+      <th>nCyclesToKeepRecords</th>
+      <td><p>integer eliminate data on cycles above this num</p></td>
+    </tr>
+    <tr>
+      <th>selCritPipeAdv</th>
+      <td><p>function used to determine selection criterion for pipe</p></td>
+    </tr>
+    <tr>
+      <th>selCritPopImprov</th>
+      <td><p>function used to determine sel crit for pop improv</p></td>
     </tr>
     </table>
 
@@ -247,30 +317,8 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
     <p>All arguments are exactly as specified in the control files. Main exception is schemeDF, which is just a tibble() or data.frame version of the set of bsp arguments which are vectors (giving values for each breeding stage). Columns must have names exactly as in the corresponding arguments in control file: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>schemeDF</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>stageNames<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"SDN"</span>, <span class='st'>"CET"</span>, <span class='st'>"PYT"</span><span class='op'>)</span>,
-                 nReps<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span>,
-                 nLocs<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span>,
-                 nChks<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span>,
-                 nEntries<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>50</span>, <span class='fl'>20</span><span class='op'>)</span>,
-                 entryToChkRatio<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>50</span>, <span class='fl'>20</span>, <span class='fl'>10</span><span class='op'>)</span>,
-                 errVars<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>150</span>,<span class='fl'>75</span>,<span class='fl'>40</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>bsp</span> <span class='op'>&lt;-</span> <span class='fu'>specifyBSP</span><span class='op'>(</span><span class='va'>schemeDF</span>,nParents <span class='op'>=</span> <span class='fl'>10</span>, nCrosses <span class='op'>=</span> <span class='fl'>10</span>, nProgeny <span class='op'>=</span> <span class='fl'>10</span>,
-                useOptContrib <span class='op'>=</span> <span class='cn'>FALSE</span>,
-                useCurrentPhenoTrain <span class='op'>=</span> <span class='cn'>TRUE</span>,
-                nCyclesToKeepRecords <span class='op'>=</span> <span class='fl'>1</span>,
-                selCritPipeAdv <span class='op'>=</span> <span class='va'>selCritGRM</span>,
-                selCritPopImprov <span class='op'>=</span> <span class='va'>selCritGRM</span>,
-                nChr <span class='op'>=</span> <span class='fl'>2</span>,effPopSize <span class='op'>=</span> <span class='fl'>50</span>,
-                segSites <span class='op'>=</span> <span class='fl'>100</span>, nQTL <span class='op'>=</span> <span class='fl'>5</span>, nSNP <span class='op'>=</span> <span class='fl'>10</span>,
-                genVar <span class='op'>=</span> <span class='fl'>50</span>, gxeVar <span class='op'>=</span> <span class='fl'>0</span>, meanDD <span class='op'>=</span> <span class='fl'>0.05</span>, varDD <span class='op'>=</span> <span class='fl'>0.25</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in `names &lt;- `(., bspNew$stageNames): could not find function "names &lt;- "</span></div><div class='input'><span class='va'>test</span> <span class='op'>&lt;-</span> <span class='fu'><a href='runBreedingScheme.html'>runBreedingScheme</a></span><span class='op'>(</span>replication <span class='op'>=</span> <span class='fl'>1</span>,nCycles <span class='op'>=</span> <span class='fl'>1</span>,
-                        initializeFunc <span class='op'>=</span> <span class='va'>initFuncADChk</span>,
-                        productPipeline <span class='op'>=</span> <span class='va'>prodPipeFncChk</span>,
-                        populationImprovement <span class='op'>=</span> <span class='va'>popImprov1Cyc</span>,
-                        bsp <span class='op'>=</span> <span class='va'>bsp</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; ****** 1 
-#&gt; [1] "initFuncADChk deprecated. Please use initializeScheme"</div><div class='output co'>#&gt; <span class='error'>Error in initializeScheme(bsp): object 'bsp' not found</span></div><div class='output co'>#&gt; No traceback available 
-#&gt; NULL</div><div class='output co'>#&gt; <span class='warning'>Warning: restarting interrupted promise evaluation</span></div><div class='output co'>#&gt; <span class='error'>Error in mget(ls()): object 'bsp' not found</span></div></pre>
+    <pre class="examples"><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
