@@ -56,17 +56,17 @@ specifyPipeline <- function(bsp=NULL, ctrlFileName=NULL){
   if (is.null(ctrlFileName)){ # NULL control file: make toy example
     nStages <- 4 # Number of stages in the product pipeline
     stageNames <- c("SDN", "CET", "PYT", "AYT")
-    
+
     stageToGenotype <- "SDN"
-    
+
     trainingPopCycles <- c(3, 3, 2, 1)
-    
+
     nParents <- 20 # Number of parents in the crossing nursery
     nCrosses <- 20 # Number of crosses entering the pipeline
     nProgeny <- 10 # Number of progeny per cross
     usePolycrossNursery <- FALSE # If TRUE then completely random mating
     nSeeds <- 200 # Number of seeds if usePolycrossNursery
-    
+
     # Don't use optimum contributions in simple default. Define parms in case
     useOptContrib <- FALSE
     nCandOptCont <- 100
@@ -84,11 +84,11 @@ specifyPipeline <- function(bsp=NULL, ctrlFileName=NULL){
     # Error variances estimated from historical data
     # 200 for SDN is a guess
     errVars <- c(200, 146, 82, 40)
-    
+
     # Use rapid visual selection to move pre-seedlings to SDN
     phenoF1toStage1 <- FALSE
     errVarPreStage1 <- 500
-    
+
     names(nEntries) <- names(nChks) <- names(nReps) <- names(errVars) <- names(trainingPopCycles) <- stageNames
     useCurrentPhenoTrain <- FALSE
     nCyclesToKeepRecords <- 5 # How many cycles to keep records
@@ -141,7 +141,7 @@ specifyCosts <- function(bsp=NULL, ctrlFileName=NULL){
   }
   names(bspNew$plotCosts) <- bsp$stageNames
   bsp <- c(bsp, bspNew)
-  
+
   bsp <- calculateBudget(bsp)
   return(bsp)
 }
@@ -165,27 +165,27 @@ calculateBudget <- function(bsp){
   # 1. Genotyping means both QC and whole-genome genotyped, so the cost is
   # nGeno*(qcGenoCost + wholeGenomeCost), where nGeno depends on the stage
   # genotyped.
-  # 2. The number of plots in each trial is nEntries*nReps + nChks*chkReps so 
+  # 2. The number of plots in each trial is nEntries*nReps + nChks*chkReps so
   # the cost of the trial is (nEntries*nReps + nChks*chkReps)*plotCost*nLocs
   # NOTE for develCosts not accounting for number of rapid cycles
   if (length(bsp$plotCosts) != bsp$nStages)
     stop("plotCosts does not have the right length")
-  
+
   bsp$develCosts <- bsp$nCrosses * bsp$nProgeny * bsp$crossingCost
-  
+
   if (is.null(bsp$stageToGenotype) | bsp$stageToGenotype == "F1"){
     nGeno <- bsp$nCrosses * bsp$nProgeny
   } else{
     nGeno <- bsp$nEntries[bsp$stageToGenotype]
   }
   bsp$genotypingCosts <- nGeno * (bsp$qcGenoCost + bsp$wholeGenomeCost)
-  
+
   bsp$trialCosts <- ((bsp$nEntries * bsp$nReps + bsp$nChks * bsp$chkReps) * bsp$nLocs) %*% bsp$plotCost
-  
+
   bsp$locationCosts <- max(bsp$nLocs) * bsp$perLocationCost
-  
+
   bsp$totalCosts <- bsp$develCosts + bsp$genotypingCosts + bsp$trialCosts + bsp$locationCosts
-  
+
   return(bsp)
 }
 
@@ -213,7 +213,7 @@ calculateChkReps <- function(bsp){
   bsp$nChks <- if_else(bsp$entryToChkRatio == 0, 0, bsp$nChks)
   chkReps <- if_else(is.infinite(chkReps) | is.nan(chkReps) | is.na(chkReps), 0, chkReps)
   bsp$chkReps <- chkReps
-  
+
   return(bsp)
 }
 
@@ -224,13 +224,26 @@ calculateChkReps <- function(bsp){
 #' Ideally this is useful for programmatically varying breeding schemes.
 #'
 #' @param schemeDF data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
+#' \itemize{
+#'  \item \code{stageNames}: Vector of number of number of entries in each stage
+#'  \item \code{nReps}: Vector of number of reps used in each stage
+#'  \item \code{nLocs}: Vector of number of locations used in each stage
+#'  \item \code{nChks}: Vector of number of checks used in each stage. Checks are replicated the same as experimental entries
+#'  \item \code{nEntries}: Vector of number of number of entries in each stage
+#'  \item \code{entryToChkRatio}: How many entry plots do you have per check plot
+#'  \item \code{errVars}: Vector of error variances estimated from historical data
+#'  \item \code{trainingPopCycles}: How many cycles back to keep records from
+#'  each stage in the training population. More cycles means bigger training
+#'  population but also more distant from the selection candidates.
+#'  Fewer cycles means the simulation runs faster
+#' }
 #' @param nParents integer number of parents to cross
 #' @param nCrosses integer how many crosses to make
 #' @param nProgeny integer how many progeny per cross
 #' @param useOptContrib logical whether to use optimal contributions
 #' @param nCandOptCont integer how many candidates to consider for opt contrib
 #' @param targetEffPopSize numeric target effective population size for OC
-#' @param useCurrentPhenoTrain logical whether to use phenotypes for parent sel
+#' @param useCurrentPhenoTrain T/F. Are the current year phenotypes available for model training. when parents are chosen to send to the crossing nursery?
 #' @param nCyclesToKeepRecords integer eliminate data on cycles above this num
 #' @param selCritPipeAdv function used to determine selection criterion for pipe
 #' @param selCritPopImprov function used to determine sel crit for pop improv
@@ -243,71 +256,84 @@ calculateChkReps <- function(bsp){
 #' @param gxeVar numeric genotype by environment variance of the founders
 #' @param meanDD numeric mean dominance deviation. Set to zero for additive
 #' @param varDD numeric variance across loci of their dominance deviation
+#' @param relAA from AlphaSimR "the relative value of additive-by-additive variance compared to additive variance in a diploid organism with allele frequency 0.5"
+#' @param quickHaplo T/F, Whether to use the AlphaSimR "quickHaplo" feature. It is less realistic but greatly accelerates the creation of founders. Useful for quick tests.
+#' @param gxyVar genotype-by-year variance
+#' @param gxlVar genotype-by-location variance
+#' @param gxyxlVar genotype-by-location-by-year variance
+#' @param stageToGenotype At what stage do you want to genotype individuals?  In addition to the
+#' named stages (SDN, CET, and PYT in this control file), the user can
+#' specify F1, which will cause all nCrosses * nProgeny individuals to be
+#' genotyped. If nothing is specified, the default will be to genotype all F1.
+#' @param usePolycrossNursery T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating
+#' @param nSeeds Parameter to determine the number of seeds only if usePolycrossNursery TRUE
+#' @param nClonesToNCRP Number of clones that will be sent to NCRP for potential variety release
+#' @param phenoF1toStage1 T/F. Parameters to control how seeds are moved from F1 to the Stage 1 trial
+#' @param errVarPreStage1 Parameters to control how seeds are moved from F1 to the Stage 1 trial
 #'
 #' @return a named list of of the parameters to specify a breeding scheme simulation
 #'
 #' @details All arguments are exactly as specified in the control files. Main exception is schemeDF, which is just a tibble() or data.frame version of the set of bsp arguments which are vectors (giving values for each breeding stage). Columns must have names exactly as in the corresponding arguments in control file: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
 #'
 #' @examples
-#' schemeDF <- tibble(stageNames=c("SDN", "CET", "PYT"),
-#'                  nReps=c(1, 1, 2),
-#'                  nLocs=c(1, 1, 2),
-#'                  nChks=c(1, 1, 2),
-#'                  nEntries=c(100, 50, 20),
-#'                  entryToChkRatio=c(50, 20, 10),
-#'                  errVars=c(150,75,40))
-#' bsp <- specifyBSP(schemeDF,nParents = 10, nCrosses = 10, nProgeny = 10,
-#'                 useOptContrib = FALSE,
-#'                 useCurrentPhenoTrain = TRUE,
-#'                 nCyclesToKeepRecords = 1,
-#'                 selCritPipeAdv = selCritGRM,
-#'                 selCritPopImprov = selCritGRM,
-#'                 nChr = 2,effPopSize = 50,
-#'                 segSites = 100, nQTL = 5, nSNP = 10,
-#'                 genVar = 50, gxeVar = 0, meanDD = 0.05, varDD = 0.25)
-#' test <- runBreedingScheme(replication = 1,nCycles = 1,
-#'                         initializeFunc = initFuncADChk,
-#'                         productPipeline = prodPipeFncChk,
-#'                         populationImprovement = popImprov1Cyc,
-#'                         bsp = bsp)
+#'
 #' @export
 specifyBSP <- function(schemeDF,
-                     nParents,nCrosses,nProgeny,
-                     useOptContrib=FALSE,nCandOptCont=NULL,targetEffPopSize=NULL, # if useOptContrib=TRUE, must specify these args
-                     useCurrentPhenoTrain=TRUE,
-                     nCyclesToKeepRecords,
-                     selCritPipeAdv,selCritPopImprov,
-                     nChr,effPopSize,
-                     segSites,nQTL,nSNP,genVar,gxeVar,meanDD,varDD){
+                       nChr,effPopSize,quickHaplo=FALSE,
+                       segSites,nQTL,nSNP,genVar,
+                       gxeVar=NULL,gxyVar=NULL,gxlVar=NULL,gxyxlVar=NULL,
+                       meanDD=0,varDD=0,relAA=0,
+                       #nStages, <- DELETE. not needed as an arg?
+                       stageToGenotype,
+                       nParents,nCrosses,nProgeny,
+                       usePolycrossNursery=FALSE,nSeeds=NULL,
+                       useOptContrib=FALSE,nCandOptCont=NULL,targetEffPopSize=NULL,
+                       nClonesToNCRP,
+                       phenoF1toStage1=FALSE,errVarPreStage1=NULL,
+                       useCurrentPhenoTrain=FALSE,
+                       nCyclesToKeepRecords,
+                       #nCyclesToRun=NULL, <- also DELETE as not needed arg? inputs instead at runBreedingScheme func
+                       selCritPipeAdv,
+                       selCritPopImprov){
+
   bspNew <- list()
+  # translate the scheme data.frame schemeDF into correct bsp list-of-named-vectors format
   bspNew[["nStages"]] <- nrow(schemeDF)
   bspNew[["stageNames"]] <- schemeDF$stageNames
-  bspNew[["nReps"]] <- schemeDF$nReps %>% `names <- `(bspNew$stageNames)
-  bspNew[["nLocs"]] <- schemeDF$nLocs %>% `names <- `(bspNew$stageNames)
-  bspNew[["nChks"]] <- schemeDF$nChks %>% `names <- `(bspNew$stageNames)
-  bspNew[["nEntries"]] <- schemeDF$nEntries %>% `names <- `(bspNew$stageNames)
-  bspNew[["entryToChkRatio"]] <- schemeDF$entryToChkRatio %>% `names <- `(bspNew$stageNames)
-  bspNew[["errVars"]] <- schemeDF$errVars %>% `names <- `(bspNew$stageNames)
-  bspNew[["nParents"]] <- nParents
-  bspNew[["nCrosses"]] <- nCrosses
-  bspNew[["nProgeny"]] <- nProgeny
-  bspNew[["useOptContrib"]] <- useOptContrib # if setting this true, there are other arguments that are needed
-  bspNew[["useCurrentPhenoTrain"]] <- useCurrentPhenoTrain
-  bspNew[["nCyclesToKeepRecords"]] <- nCyclesToKeepRecords
-  bspNew[["selCritPipeAdv"]] <- selCritPipeAdv
-  bspNew[["selCritPopImprov"]] <- selCritPopImprov
-  bspNew[["nChr"]] <- nChr
-  bspNew[["effPopSize"]] <- effPopSize
-  bspNew[["segSites"]] <- segSites
-  bspNew[["nQTL"]] <- nQTL
-  bspNew[["nSNP"]] <- nSNP
-  bspNew[["genVar"]] <- genVar
-  bspNew[["gxeVar"]] <- gxeVar
-  bspNew[["meanDD"]] <- meanDD
-  bspNew[["varDD"]] <- varDD
+  bspNew[["nReps"]] <- schemeDF$nReps %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["nLocs"]] <- schemeDF$nLocs %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["nChks"]] <- schemeDF$nChks %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["nEntries"]] <- schemeDF$nEntries %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["entryToChkRatio"]] <- schemeDF$entryToChkRatio %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["errVars"]] <- schemeDF$errVars %>% `names<-`(.,bspNew$stageNames)
+  bspNew[["trainingPopCycles"]] <- schemeDF$trainingPopCycles %>% `names<-`(.,bspNew$stageNames)
+
+
+  # pop. parms
+  pop_parms<-c("nChr","effPopSize","quickHaplo","segSites","nQTL","nSNP",
+               "genVar","gxeVar","gxyVar","gxlVar","gxyxlVar",
+               "meanDD","varDD","relAA")
+  pop_parms %<>%
+    `names<-`(.,.) %>%
+    purrr::map(.,~get(.))
+
+  # pipeline parms
+  pipe_parms <- c("stageToGenotype",
+                  "nParents", "nCrosses", "nProgeny",
+                  "usePolycrossNursery", "nSeeds",
+                  "useOptContrib", "nCandOptCont", "targetEffPopSize",
+                  "nClonesToNCRP",
+                  "phenoF1toStage1", "errVarPreStage1", "useCurrentPhenoTrain",
+                  "nCyclesToKeepRecords",
+                  "selCritPipeAdv", "selCritPopImprov")
+  pipe_parms %<>%
+    `names<-`(.,.) %>%
+    purrr::map(.,~get(.))
+
+  bspNew<-c(bspNew,pop_parms,pipe_parms)
 
   bspNew <- calcDerivedParms(bspNew)
-  return(bspNew) 
+  return(bspNew)
 }
 
 #' calcDerivedParms function
@@ -321,7 +347,7 @@ specifyBSP <- function(schemeDF,
 #'
 #' Should have default if not specified
 #' DONE stageToGenotype=stageNames[1]
-#' DONE useOptContrib=FALSE, 
+#' DONE useOptContrib=FALSE,
 #' DONE nCandOptCont=nEntries[1], targetEffPopSize=nParents
 #' DONE nChks=0, entryToChkRatio=0
 #' DONE phenoF1toStage1=FALSE, errVarPreStage1=genoVar*20
@@ -335,13 +361,13 @@ calcDerivedParms <- function(bsp){
   nv <- function(parm){
     is.null(parm) | length(parm) == 0
   }
-  
+
   # Prevent errors having to do with inconsistent parameters
   if (bsp$nSNP + bsp$nQTL >= bsp$segSites){
     print("The number of segregating sites (segSites) has to be greater than the number of SNPs (nSNP) and the number of QTL (nQTL). segSites set 10% bigger than nSNP + nQTL")
     bsp$segSites <- round((bsp$nSNP + bsp$nQTL) * 1.1) + 1
   }
-  
+
   # Some parms have to be logical
   makeLogical <- function(parm){
     if (nv(parm)) parm <- FALSE else parm <- as.logical(parm)
@@ -353,7 +379,7 @@ calcDerivedParms <- function(bsp){
   bsp$phenoF1toStage1 <- makeLogical(bsp$phenoF1toStage1)
   bsp$quickHaplo <- makeLogical(bsp$quickHaplo)
   bsp$usePolycrossNursery <- makeLogical(bsp$usePolycrossNursery)
-  
+
   # In case the function is referred by name, replace with actual function
   if (nv(bsp$selCritPipeAdv)) bsp$selCritPipeAdv <- selCritIID
   if (nv(bsp$selCritPopImprov)) bsp$selCritPopImprov <- selCritIID
@@ -361,13 +387,13 @@ calcDerivedParms <- function(bsp){
     bsp$selCritPipeAdv <- get(bsp$selCritPipeAdv)
   if ("character" %in% class(bsp$selCritPopImprov))
     bsp$selCritPopImprov <- get(bsp$selCritPopImprov)
-  
+
   # Make sure you keep enough cycles WARNING: not sure this is needed anymore
   bsp$nCyclesToKeepRecords <- max(bsp$nStages+1, bsp$nCyclesToKeepRecords)
-  
+
   if (nv(bsp$nCyclesToRun))
     bsp$nCyclesToRun <- bsp$nCyclesToKeepRecords + 1
-  
+
   # How many clones will go to the National Coordinated Research Program
   nEndProd <- dplyr::last(bsp$nEntries)
   if (nv(bsp$nClonesToNCRP)){
@@ -375,7 +401,7 @@ calcDerivedParms <- function(bsp){
   } else{ # Don't specify more clones than there are in the last stage
     bsp$nClonesToNCRP <- min(nEndProd, bsp$nClonesToNCRP)
   }
-  
+
   # If usePolycrossNursery then one seed per cross
   if (bsp$usePolycrossNursery){
     if (nv(bsp$nSeeds)){
@@ -384,7 +410,16 @@ calcDerivedParms <- function(bsp){
     bsp$nCrosses <- bsp$nSeeds
     bsp$nProgeny <- 1
   }
-  
+
+  # PROPOSED NEW by MW
+  ## nSeeds us currently NOT ONLY used for polycross and optim contrib.
+  ## If nSeeds passed as NULL even when not using polycross
+  ## will error because it is called in popImprov1Cyc to assign a progeny@fixeff
+  #### though I'm not sure what the fixeff assignment is for
+  if (nv(bsp$nSeeds)){
+    bsp$nSeeds <- bsp$nCrosses * bsp$nProgeny
+  }
+
   # Optimal contributions defaults
   if (bsp$useOptContrib){
     if (bsp$usePolycrossNursery) stop("Polycross nursery and optimal contributions cannot be used together")
@@ -397,12 +432,12 @@ calcDerivedParms <- function(bsp){
       bsp$nCrosses <- round(bsp$nSeeds / bsp$nProgeny)
     }
   }
-  
+
   # Stop and warn user if not enough crosses specified
   if((bsp$nCrosses * bsp$nProgeny) < bsp$nEntries[1]){
     stop("Not enough F1s to fill up Stage 1 trial. [nCrosses * nProgeny >= nEntries for Stage 1] is required")
   }
-  
+
   # Stop and warn user if stageToGenotype is not a named stage
   if (nv(bsp$stageToGenotype)){
     bsp$stageToGenotype <- bsp$stageNames[1]
@@ -410,7 +445,7 @@ calcDerivedParms <- function(bsp){
   if (!(bsp$stageToGenotype %in% c("F1", bsp$stageNames))){
       stop("The stageToGenotype is not one of the pipeline stages")
   }
-  
+
   # Set up trainingPopCycles
   stageToGeno <- which(c("F1", bsp$stageNames) == bsp$stageToGenotype)
   if (nv(bsp$trainingPopCycles)){
@@ -420,12 +455,12 @@ calcDerivedParms <- function(bsp){
     bsp$trainingPopCycles <- c(F1=0, bsp$trainingPopCycles)
     bsp$trainingPopCycles[stageToGeno] <- max(bsp$trainingPopCycles[stageToGeno], 2)
   }
-  
+
   # Genetic architecture defaults
   if (nv(bsp$meanDD)) bsp$meanDD <- 0
   if (nv(bsp$varDD)) bsp$varDD <- 0
   if (nv(bsp$relAA)) bsp$relAA <- 0
-  
+
   # Figure out how many checks to add to each stage
   pairwiseComp <- function(vec1, vec2, fnc){
     return(apply(cbind(vec1, vec2), 1, fnc))
@@ -437,16 +472,16 @@ calcDerivedParms <- function(bsp){
   nChkPlots <- pairwiseComp(nChkPlots, bsp$nReps, max) # At least one check / rep
   chkReps <- ceiling(nChkPlots / bsp$nChks)
   # Safety if nChks or entryToChkRatio misunderstood
-  bsp$nChks <- if_else(bsp$entryToChkRatio == 0, 0, bsp$nChks)
+  bsp$nChks <- if_else(bsp$entryToChkRatio == 0, 0, as.numeric(bsp$nChks))
   chkReps <- if_else(is.infinite(chkReps) | is.nan(chkReps) | is.na(chkReps), 0, chkReps)
-  
+
   # Enforce other defaults
   if (bsp$phenoF1toStage1){
     if (nv(bsp$errVarPreStage1)){
       bsp$errVarPreStage1 <- bsp$errVars[1] * 20
     }
   }
-  
+
   # Check that these vectors are of the right length
   rightLength <- function(vec) length(vec) == bsp$nStages
   v <- list(bsp$stageNames, bsp$nEntries, bsp$entryToChkRatio, bsp$nReps, bsp$nLocs, bsp$errVars)
@@ -457,10 +492,10 @@ calcDerivedParms <- function(bsp){
   }
   if (length(bsp$trainingPopCycles) != bsp$nStages+1)
     stop("trainingPopCycles does not have the right length")
-  
+
   # Not in use yet...
   if (nv(bsp$analyzeInbreeding)) bsp$analyzeInbreeding <- 0
-  
+
   # Defaults for GxE variance
   if (any(nv(bsp$gxyVar), nv(bsp$gxlVar), nv(bsp$gxyxlVar))){
     if (!nv(bsp$gxeVar)){
@@ -489,7 +524,7 @@ calcDerivedParms <- function(bsp){
 #' @param targetBudget Numeric value that you want the budget adjusted to
 #' @param fixedEntryStages Named integer vector indicating entry numbers for specific stages. Names must be names of the specific stages
 #' @param adjustStages Character vector with names of stages to be changed such that the target budget is achieved
-#' 
+#'
 #' @return A revised bsp with the sizes of the target stages changed to match.
 #'
 #' @details Call this function after running specifyCosts.
@@ -505,7 +540,7 @@ adjustEntriesToBudget <- function(bsp, targetBudget, fixedEntryStages=NULL, adju
   bsp <- calculateChkReps(bsp)
   bsp <- calculateBudget(bsp)
   budgDiff <- (targetBudget - bsp$totalCosts) / length(adjustStages)
-  
+
   for (stage in adjustStages){
     costPerInd <- bsp$nReps[stage] * bsp$nLocs[stage] * bsp$plotCost[stage]
     if (bsp$entryToChkRatio[stage] > 0) costPerInd <- costPerInd * (1 + 1 / bsp$entryToChkRatio[stage])
@@ -517,7 +552,7 @@ adjustEntriesToBudget <- function(bsp, targetBudget, fixedEntryStages=NULL, adju
     if (nEntriesNow < 0) stop(paste("adjustEntriesToBudget: needed nEntries for stage", stage, "below zero"))
     bsp$nEntries[stage] <- nEntriesNow
   }
-  
+
   bsp <- calculateBudget(bsp)
   # Check to make sure no later stages are bigger than earlier stages
   for (stage in 1:bsp$nStages){
@@ -538,7 +573,7 @@ adjustEntriesToBudget <- function(bsp, targetBudget, fixedEntryStages=NULL, adju
 #' @param targetBudget Numeric value that you want the budget adjusted to
 #' @param percentRanges Numeric matrix with nStages+1 rows and two columns. Columns are min and max percentage of budget. Rows are costs for crossing, genotyping, trialing each stage.
 #' @param nAttempts Integer maximum number of attempts to sample percentages and have them follow the rules of stages becoming progressively smaller.
-#' 
+#'
 #' @return A revised bsp with the sizes of the stages within the percentage ranges specified.
 #'
 #' @details Call this function after running specifyCosts.
@@ -552,7 +587,7 @@ adjustEntriesToBudget <- function(bsp, targetBudget, fixedEntryStages=NULL, adju
 #' @export
 sampleEntryNumbers <- function(bsp, targetBudget, percentRanges, nAttempts=50){
   require(MCMCpack)
-  
+
   targetBudget <- targetBudget - max(bsp$nLocs) * bsp$perLocationCost
   if (targetBudget < 0) stop("Location costs are above the target budget")
   attemptNo <- 0
@@ -563,7 +598,7 @@ sampleEntryNumbers <- function(bsp, targetBudget, percentRanges, nAttempts=50){
       percentages <- MCMCpack::rdirichlet(1, rep(1, bsp$nStages+1))
       spDone <- TRUE
       for (i in 1:(bsp$nStages+1)){
-        spDone <- spDone & 
+        spDone <- spDone &
           percentRanges[i,1] < percentages[i] &
           percentages[i] < percentRanges[i,2]
       }
@@ -571,16 +606,16 @@ sampleEntryNumbers <- function(bsp, targetBudget, percentRanges, nAttempts=50){
     names(percentages) <- c("F1", bsp$stageNames)
     whchStgGeno <- which(bsp$stageToGenotype == names(percentages)) - 1
     if (length(whchStgGeno) == 0) whchStgGeno <- -1
-    
+
     budgets <- targetBudget * percentages
-    
+
     # How many progeny per cross to make
     f1cost <- bsp$crossingCost
     if (whchStgGeno == 0) f1cost <- f1cost + bsp$qcGenoCost + bsp$wholeGenomeCost
     bsp$nSeeds <- budgets[1] / f1cost
     bsp$nProgeny <- round(bsp$nSeeds / bsp$nCrosses)
     bsp$nSeeds <- bsp$nProgeny * bsp$nCrosses
-    
+
     for (stage in 1:bsp$nStages){
       costPerInd <- bsp$nReps[stage] * bsp$nLocs[stage] * bsp$plotCost[stage]
       if (bsp$entryToChkRatio[stage] > 0) costPerInd <- costPerInd * (1 + 1 / bsp$entryToChkRatio[stage])
@@ -589,7 +624,7 @@ sampleEntryNumbers <- function(bsp, targetBudget, percentRanges, nAttempts=50){
       }
       bsp$nEntries[stage] <- round(budgets[stage+1] / costPerInd)
     }
-    
+
     # Check to make sure no later stages are bigger than earlier stages
     samplingDone <- TRUE
     for (stage in 1:bsp$nStages){
@@ -603,7 +638,7 @@ sampleEntryNumbers <- function(bsp, targetBudget, percentRanges, nAttempts=50){
     bsp$budgetPercentages <- percentages
     attemptNo <- attemptNo + 1
   }#END samplingDone
-  
+
   bsp <- calculateBudget(bsp)
   return(bsp)
 }
