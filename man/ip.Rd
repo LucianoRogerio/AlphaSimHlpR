@@ -5,7 +5,7 @@
 \alias{ip}
 \title{packages installed at the machine}
 \format{
-An object of class \code{character} of length 270.
+An object of class \code{character} of length 271.
 }
 \usage{
 ip

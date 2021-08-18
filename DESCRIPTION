@@ -9,9 +9,9 @@ Description: A complete breeding scheme has a product development pipeline that 
 License: GPL-3
 Depends:
   R (>= 3.0.0),
-  AlphaSimR
+  AlphaSimR,
+  dplyr
 Imports:
-  dplyr,
   tidyr,
   plotrix,
   lme4,
