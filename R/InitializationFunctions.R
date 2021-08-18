@@ -33,7 +33,7 @@ initFuncADChk <- function(bsp){
 #' function to initialize simulation of a breeding program. A single additive-dominance trait is simulated. Check are used in this scheme
 #'
 #' @param bsp A list of breeding scheme parameters.  See \code{specifyPipeline} and \code{specifyPopulation}
-#' @param nThreads uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.
+#' @param nThreadsForMacs uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.
 #' @return A list containing: 1. The simulation parameters in \code{SP}; 2. The initial records of the breeding program in \code{records}. See \code{fillPipeline} for details; 3. A completed \code{bsp} object
 #'
 #' @details Creates the founders and the initial records at the beginning of the simulation of a breeding program.
@@ -47,13 +47,13 @@ initFuncADChk <- function(bsp){
 #' records <- initList$records
 #'
 #' @export
-initializeScheme <- function(bsp,nThreads = NULL){
+initializeScheme <- function(bsp,nThreadsForMacs = NULL){
   # Create haplotypes for founder population of outbred individuals
   nF1 <- bsp$nCrosses * bsp$nProgeny + max(bsp$nChks)
   if (bsp$quickHaplo){
     founderHap <- quickHaplo(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites)
   } else{
-    founderHap <- runMacs2(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites, Ne=bsp$effPopSize,nThreads = nThreads)
+    founderHap <- runMacs2(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites, Ne=bsp$effPopSize,nThreads = nThreadsForMacs)
   }
 
   # New global simulation parameters from founder haplotypes
