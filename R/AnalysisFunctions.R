@@ -81,7 +81,7 @@ framePhenoRec <- function(records, bsp){
 #' @export
 phenoRecFromPop <- function(pop, bsp, stage, checks=FALSE){
   # Entries and replicates have different numbers of stages
-  nReps <- if_else(checks, bsp$chkReps[stage], bsp$nReps[stage])
+  nReps <- if_else(checks, bsp$chkReps[stage], as.numeric(bsp$nReps[stage]))
   varE <- bsp$gxyVar + (bsp$gxlVar + bsp$gxyxlVar + bsp$errVars[stage] / nReps) / bsp$nLocs[stage]
   # Set this up for the lmer method distinguishing checks from experimentals
   phenoRec <- tibble(id=pop@id, mother=pop@mother, father=pop@father, stage=bsp$stageNames[stage], isChk=if_else(checks, "check", "exptl"), pheno=pheno(pop), genoVal=gv(pop), errVar=varE)
