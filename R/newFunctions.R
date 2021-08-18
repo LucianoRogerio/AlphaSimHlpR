@@ -29,9 +29,9 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
                                       selCritPopPre,selCritPopPost,
                                       selCritPipePre="selCritIID",
                                       selCritPipePost="selCritIID",
-                                      initializeFunc=initializeFunc,
-                                      productPipeline=productPipeline,
-                                      populationImprovement=popImprov1Cyc,
+                                      iniFunc="initializeScheme",
+                                      productFunc="productPipeline",
+                                      popImprovFunc="popImprov1Cyc",
                                       nBLASthreads=NULL,nThreadsMacs2=NULL){
 
   on.exit(expr={print(traceback()); saveRDS(mget(ls()), file="~/runBreedingScheme.rds")})
@@ -41,7 +41,11 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
   cat("******", replication, "\n")
 
   # This initiates the founding population
-  initList <- initializeFunc(bsp,nThreads=nThreadsMacs2)
+  bsp[["initializeFunc"]] <- get(iniFunc)
+  bsp[["productPipeline"]] <- get(productFunc)
+  bsp[["populationImprovement"]] <- get(popImprovFunc)
+
+  initList <- bsp$initializeFunc(bsp,nThreadsForMacs=nThreadsMacs2)
   SP <- initList$SP
   bsp <- initList$bsp
   records <- initList$records
@@ -54,8 +58,8 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
   cat("\n"); cat("Burn-in cycles"); cat("\n")
   for (cycle in 1:nBurnInCycles){
     cat(cycle, " ")
-    records <- productPipeline(records, bsp, SP)
-    records <- populationImprovement(records, bsp, SP)
+    records <- bsp$productPipeline(records, bsp, SP)
+    records <- bsp$populationImprovement(records, bsp, SP)
   }
 
   ## set the selection critera for post-burn in
@@ -66,8 +70,8 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
   cat("\n"); cat("Post burn-in cycles"); cat("\n")
   for (cycle in (nBurnInCycles+1):(nBurnInCycles+nPostBurnInCycles)){
     cat(cycle, " ")
-    records <- productPipeline(records, bsp, SP)
-    records <- populationImprovement(records, bsp, SP)
+    records <- bsp$productPipeline(records, bsp, SP)
+    records <- bsp$populationImprovement(records, bsp, SP)
   }
 
   # Finalize the stageOutputs
