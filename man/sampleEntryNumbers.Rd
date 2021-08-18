@@ -27,7 +27,7 @@ Call this function after running specifyCosts.
 \examples{
 Assume stages of CET, PYT, UYT, so percentRanges needs 4 rows
 Assume CET is genotyped so more budget there
-percentRanges <- matrix(c(0.02, 0.24, 0.12, 0.12, 0.06, 0.55, 0.30, 0.30), nrow=4)
-bsp <- sampleEntryNumbers(bsp, targetBudget=50000, percentRanges=percentRanges)
+#percentRanges <- matrix(c(0.02, 0.24, 0.12, 0.12, 0.06, 0.55, 0.30, 0.30), nrow=4)
+#bsp <- sampleEntryNumbers(bsp, targetBudget=50000, percentRanges=percentRanges)
 
 }

@@ -5,7 +5,7 @@ author:
 date: "2020-01-05"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using_AlphaSimHlpR}
+  %\VignetteIndexEntry{Using AlphaSimHlpR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
