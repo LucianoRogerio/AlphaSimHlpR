@@ -1,87 +1,111 @@
-#' Run a breeding scheme including a burn-in period
+#' Run population improvement using parent selection
 #'
-#' Allows users to switch selection critera after a designated set of cycles and continue for additional cycles.
-#' Use case envisioned is to run phenotypic selection for an initial period and then switch to e.g. GS.
-#' Adds a few other bells and whistles to the original \code{runBreedingScheme} function.
+#' Function to improve a simulated breeding population by one cycle.
+#' This version is adjusted relative to the original \code{popImprov1Cyc} function,
+#' which drew \code{candidates} from the full \code{records$F1} (excluding potentially
+#' indivs only scored during the current year, if \code{useCurrentPhenoTrain=FALSE}).
+#' My changes:
+#' \itemize{
+#'  \item \code{nTrainPopCycles}: draw training pop clones only from this number of recent cycles.
+#'  \item \code{nYrsAsCandidates}: candidates for selection only from this number of recent years
+#'  \item \code{maxTrainingPopSize}: From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}),
+#'  subsample this number of lines for training data. This is \emph{in addition to} the "check" (\code{bsp$checks@id})
+#'  and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
+#'  All "historical" data will always be used, but the number of maximum training lines will be held constant.
+#'  Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.
+#'  }
 #'
-#' @param replication Integer replication of running the breeding scheme
-#' @param bsp  A list of breeding scheme parameters.
-#' @param nBurnInCycles Integer number of cycles to as 'burn-in' using the \code{selCritPopPre} and \code{selCritPipePre} settings.
-#' @param nPostBurnInCycles Integer number of cycles to as 'burn-in' using the \code{selCritPopPost} and \code{selCritPipePost} settings.
-#' @param initializeFunc Function to initialize the breeding program.
-#' @param productPipeline Function to advance the product pipeline by one generation
-#' @param populationImprovement Function to improve the breeding population and select parents to initiate the next cycle of the breeding scheme
-#' @param nBLASthreads number of cores for each worker to use for multi-thread BLAS. Will speed up, for example, genomic predictions when using selCritGRM. Careful to balance with other forms of parallel processing.
-#' @param nThreadsMacs2 uses the nThreads argument in \code{runMacs2}, parallelizes founder sim by chrom.
-#' @param selCritPopPre string, overrides the selCrit in \code{bsp} for the burn-in stage.
-#' @param selCritPopPost string, overrides the selCrit in \code{bsp} for the burn-in stage.
-#' @param selCritPipePre string, overrides the selCrit in \code{bsp} for the burn-in stage. DEFAULT: selCritIID
-#' @param selCritPipePost string, overrides the selCrit in \code{bsp} for the burn-in stage. DEFAULT: selCritIID
-#' @return A \code{records} object containing the phenotypic records retained of the breeding scheme
+#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param bsp A list of breeding scheme parameters
+#' @param SP The AlphaSimR SimParam object
+#' @return A records object with a new F1 Pop-class object of progeny coming out of a population improvement scheme
 #'
-#' @details A wrapper to initiate the breeding program then iterate cycles of product pipeline and population improvement
-#'
-#' @examples
-
+#' @details This function uses penotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
 #' @export
-runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
-                                      nBurnInCycles,nPostBurnInCycles,
-                                      selCritPopPre,selCritPopPost,
-                                      selCritPipePre="selCritIID",
-                                      selCritPipePost="selCritIID",
-                                      iniFunc="initializeScheme",
-                                      productFunc="productPipeline",
-                                      popImprovFunc="popImprov1Cyc",
-                                      nBLASthreads=NULL,nThreadsMacs2=NULL){
-
-  on.exit(expr={print(traceback()); saveRDS(mget(ls()), file="~/runBreedingScheme.rds")})
-
-  if(!is.null(nBLASthreads)) { RhpcBLASctl::blas_set_num_threads(nBLASthreads) }
-
-  cat("******", replication, "\n")
-
-  # This initiates the founding population
-  bsp[["initializeFunc"]] <- get(iniFunc)
-  bsp[["productPipeline"]] <- get(productFunc)
-  bsp[["populationImprovement"]] <- get(popImprovFunc)
-
-  initList <- bsp$initializeFunc(bsp,nThreadsForMacs=nThreadsMacs2)
-  SP <- initList$SP
-  bsp <- initList$bsp
-  records <- initList$records
-
-  ## set the selection criteria for burn-in
-  bsp[["selCritPipeAdv"]] <- get(selCritPipePre)
-  bsp[["selCritPopImprov"]] <- get(selCritPopPre)
-
-  # Burn-in cycles
-  cat("\n"); cat("Burn-in cycles"); cat("\n")
-  for (cycle in 1:nBurnInCycles){
-    cat(cycle, " ")
-    records <- bsp$productPipeline(records, bsp, SP)
-    records <- bsp$populationImprovement(records, bsp, SP)
+popImprovByParentSel <- function(records, bsp, SP){
+  # Which phenotypes can be included for model training?
+  ### Current year phenotypes?
+  trainRec <- records
+  if (!bsp$useCurrentPhenoTrain){
+    for (stage in 1+1:bsp$nStages){
+      trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
+    }
   }
 
-  ## set the selection critera for post-burn in
-  bsp[["selCritPipeAdv"]] <- get(selCritPipePost)
-  bsp[["selCritPopImprov"]] <- get(selCritPopPost)
-
-  # Post burn-in cycles
-  cat("\n"); cat("Post burn-in cycles"); cat("\n")
-  for (cycle in (nBurnInCycles+1):(nBurnInCycles+nPostBurnInCycles)){
-    cat(cycle, " ")
-    records <- bsp$productPipeline(records, bsp, SP)
-    records <- bsp$populationImprovement(records, bsp, SP)
+  # Which individuals can be selection candidates?
+  ## only individuals that have been genoytped in the last "nYrsAsCandidates"
+  if(bsp$stageToGenotype=="F1"){
+    NrecentProgenySelCands<-(bsp$nProgeny*bsp$nCrosses)*bsp$nYrsAsCandidates
+    candidates<-records$F1@id %>% tail(.,n = NrecentProgenySelCands)
+  } else {
+    candidates<-records[[bsp$stageToGenotype]] %>%
+      tail(.,n=bsp$nYrsAsCandidates) %>%
+      map_df(.,rbind) %$%
+      unique(id) %>%
+      # exclude checks
+      setdiff(.,bsp$checks@id)
   }
 
-  # Finalize the stageOutputs
-  records <- lastCycStgOut(records, bsp, SP)
+  # How many additional individuals to use as training?
+  ## these are individuals with phenotypes
+  ## but not in the list of selection candidates
+  ## Drawn from the most recent cycles according to "nTrainPopCycles"
+  ## Potentially subsampled according to "maxTrainingPopSize"
+  phenotypedLines<-trainRec[bsp$stageNames] %>%
+    map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
+    map_df(.,rbind) %$%
+    unique(id)
 
-  on.exit()
-  return(list(records=records,
-              bsp=bsp,
-              SP=SP))
+  phenotypedLines_notSelCands<-setdiff(phenotypedLines,candidates)
+  ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
+  maxTPsize<-min(bsp$maxTrainingPopSize,length(phenotypedLines_notSelCands))
+  ## Make sure checks ARE included
+  if(!is.null(bsp$checks)){
+    # sample from the list of non-selection candidates that also are NOT checks
+    trainingpop<-sample(setdiff(phenotypedLines_notSelCands,bsp$checks@id),
+                        size = maxTPsize, replace = F) %>%
+      # include the checks
+      c(.,bsp$checks@id) %>%
+      # vanity: order the ids
+      .[order(as.integer(.))]
+  } else {
+    trainingpop<-sample(phenotypedLines_notSelCands,
+                        size = maxTPsize, replace = F) %>%
+      .[order(as.integer(.))]
+  }
+
+  # require two inputs for downstream SelCrit
+  ## only compatible SelCrit so far will therefore be "parentSelCritGEBV"
+  ## "candidates" and "trainingpop": non-overlapping sets,
+  ## available pheno records (in "trainRec") for any of the "candidates"
+  ## will be automatically included in predictions
+  crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
+
+  # Not sure if useOptContrib will work "as is"
+  if (bsp$useOptContrib){
+    progeny <- optContrib(records, bsp, SP, crit)
+  } else {
+    # select the top nParents based
+    selectedParentIDs<-names(crit[order(crit, decreasing=T)][1:bsp$nParents])
+    # extract a pop-object of those parents
+    parents <- records$F1[selectedParentIDs]
+    # make crosses
+    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreSexes=T, simParam=SP)
+  }
+  # not 100% sure, but seems to store the "year" in the @fixEff slot of "progeny"
+  progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
+  parentsUsed <- unique(c(progeny@mother, progeny@father))
+  stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
+  stgCyc <- table(stgCyc[1,], stgCyc[2,])
+  strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
+  for (i in 1:nrow(stgCyc)){
+    stage <- as.integer(rownames(stgCyc)[i])
+    records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
+  }
+  records$F1 <- c(records$F1, progeny)
+  return(records)
 }
+
 
 #' parentSelCritGEBV function
 #'
@@ -95,7 +119,8 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
 #' Uses alternative functions \code{make_grm} and \code{gebvPhenoEval}.
 #'
 #' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
-#' @param candidates Character vector of ids of the candidates to be parents
+#' @param candidates Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted
+#' @param trainingpop chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.
 #' @param bsp The breeding scheme parameter list
 #' @param SP The AlphaSimR SimParam object (needed to pull SNPs)
 #' @return Character vector of the ids of the selected individuals
@@ -104,18 +129,15 @@ runBreedingScheme_wBurnIn <- function(replication=NULL,bsp,
 #' @examples
 #'
 #' @export
-parentSelCritGEBV <- function(records, candidates, bsp, SP){
-  grm <- make_grm(records, bsp, SP, grmType="add")
-  if (!any(candidates %in% rownames(grm))){
-    crit <- runif(length(candidates))
-  } else {
-    phenoDF <- framePhenoRec(records, bsp)
-    # Remove individuals with phenotypes but who do not have geno records
-    phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
-    crit <- gebvPhenoEval(phenoDF, grm)
-    crit <- crit[candidates]
-  }
-  names(crit) <- candidates
+parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
+  # first construct the GRM
+  indivs2keep<-union(candidates,trainingpop)
+  grm <- make_grm(records, indivs2keep, bsp, SP, grmType="add")
+  phenoDF <- framePhenoRec(records, bsp)
+  # Remove individuals with phenotypes but who do not have geno records
+  phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
+  crit <- gebvPhenoEval(phenoDF, grm)
+  crit <- crit[candidates]
   return(crit)
 }
 
@@ -123,7 +145,8 @@ parentSelCritGEBV <- function(records, candidates, bsp, SP){
 #' Function to make genomic relation matrices
 #'
 #' Function to make a genomic relationship matrix to be used to analyze the
-#' phenotypic \code{records}
+#' phenotypic \code{records}. So far only works with \code{parentSelCritGEBV}
+#' and \code{popImprovementByParentSel}.
 #'
 #' Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
 #' Uses \code{genomicMateSelectR} functions, which will need to be installed for these to work.
@@ -135,6 +158,7 @@ parentSelCritGEBV <- function(records, candidates, bsp, SP){
 #'
 #' @param records The breeding program \code{records} object. See
 #'   \code{fillPipeline} for details
+#' @param indivs2keep chr. vector of id's to be included in the grm. Must be present in \code{c(records$F1,bsp$checks)}.
 #' @param bsp The breeding scheme parameter list
 #' @param SP The AlphaSimR SimParam object. Needed to pull the SNP genotypes
 #' @param grmType
@@ -148,38 +172,9 @@ parentSelCritGEBV <- function(records, candidates, bsp, SP){
 #' @examples
 
 #' @export
-make_grm <- function(records, bsp, SP, grmType="add"){
+make_grm <- function(records, indivs2keep, bsp, SP, grmType="add"){
+  return(genomicMateSelectR::kinship(pullSnpGeno(c(records$F1,bsp$checks)[indivs2keep], simParam=SP), type = grmType)) }
 
-  allPop <- records$F1
-  # Only make GRM of individuals that are specified in the TP
-  allID <- NULL
-  tpc <- bsp$trainingPopCycles[1]
-  if (tpc){
-    lastGen <- max(records$F1@fixEff)
-    tpc <- min(lastGen, tpc)
-    allID <- records$F1@id[records$F1@fixEff %in% lastGen + (1 - tpc):0]
-  }
-  for (stageNum in 1 + 1:bsp$nStages){
-    tpc <- bsp$trainingPopCycles[stageNum]
-    if (tpc){
-      lastGen <- length(records[[stageNum]])
-      tpc <- min(lastGen, tpc)
-      for (cyc in lastGen + (1 - tpc):0){
-        allID <- c(allID, records[[stageNum]][[cyc]]$id)
-      }
-    }
-  }
-  allID <- unique(allID)
-  if (!is.null(bsp$checks)) allID <- setdiff(allID, bsp$checks@id)
-  allID <- allID[order(as.integer(allID))]
-  allPop <- allPop[allID]
-
-  if (!is.null(bsp$checks)){
-    putInChks <- setdiff(bsp$checks@id, allPop@id)
-    if (length(putInChks > 0)) allPop <- c(allPop, bsp$checks[putInChks])
-  }
-  return(genomicMateSelectR::kinship(pullSnpGeno(allPop, simParam=SP), type = grmType))
-}
 
 #' Predict the GEBV of all genotyped individuals
 #'
