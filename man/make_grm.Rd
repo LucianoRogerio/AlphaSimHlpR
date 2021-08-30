@@ -4,11 +4,13 @@
 \alias{make_grm}
 \title{Function to make genomic relation matrices}
 \usage{
-make_grm(records, bsp, SP, grmType = "add")
+make_grm(records, indivs2keep, bsp, SP, grmType = "add")
 }
 \arguments{
 \item{records}{The breeding program \code{records} object. See
 \code{fillPipeline} for details}
+
+\item{indivs2keep}{chr. vector of id's to be included in the grm. Must be present in \code{c(records$F1,bsp$checks)}.}
 
 \item{bsp}{The breeding scheme parameter list}
 
@@ -19,7 +21,8 @@ A genomic relationship matrix
 }
 \description{
 Function to make a genomic relationship matrix to be used to analyze the
-phenotypic \code{records}
+phenotypic \code{records}. So far only works with \code{parentSelCritGEBV}
+and \code{popImprovementByParentSel}.
 }
 \details{
 Setting up to distinguish between parent and cross selection and additive and non-additive predictions.

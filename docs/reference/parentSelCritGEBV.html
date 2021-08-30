@@ -129,7 +129,7 @@ Parents are selected by these criteria e.g. by the popImprov1Cyc populationImpro
 Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populationImprovement function</code></p>
     </div>
 
-    <pre class="usage"><span class='fu'>parentSelCritGEBV</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>parentSelCritGEBV</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>trainingpop</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -140,7 +140,11 @@ Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populatio
     </tr>
     <tr>
       <th>candidates</th>
-      <td><p>Character vector of ids of the candidates to be parents</p></td>
+      <td><p>Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted</p></td>
+    </tr>
+    <tr>
+      <th>trainingpop</th>
+      <td><p>chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.</p></td>
     </tr>
     <tr>
       <th>bsp</th>

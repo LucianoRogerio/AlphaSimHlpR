@@ -162,7 +162,10 @@ Ideally this is useful for programmatically varying breeding schemes.</p>
   useCurrentPhenoTrain <span class='op'>=</span> <span class='cn'>FALSE</span>,
   <span class='va'>nCyclesToKeepRecords</span>,
   <span class='va'>selCritPipeAdv</span>,
-  <span class='va'>selCritPopImprov</span>
+  <span class='va'>selCritPopImprov</span>,
+  <span class='va'>nTrainPopCycles</span>,
+  <span class='va'>nYrsAsCandidates</span>,
+  <span class='va'>maxTrainingPopSize</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -306,6 +309,18 @@ genotyped. If nothing is specified, the default will be to genotype all F1.</p><
     <tr>
       <th>selCritPopImprov</th>
       <td><p>function used to determine sel crit for pop improv</p></td>
+    </tr>
+    <tr>
+      <th>nTrainPopCycles</th>
+      <td><p>draw training pop lines only from this number of recent cycles.</p></td>
+    </tr>
+    <tr>
+      <th>nYrsAsCandidates</th>
+      <td><p>candidates for selection only from this number of recent years</p></td>
+    </tr>
+    <tr>
+      <th>maxTrainingPopSize</th>
+      <td><p>From the lines in the most recent cycles (indicated by <code>nTrainPopCycles</code>), subsample this number of lines for training data.</p></td>
     </tr>
     </table>
 

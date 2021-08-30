@@ -4,12 +4,14 @@
 \alias{parentSelCritGEBV}
 \title{parentSelCritGEBV function}
 \usage{
-parentSelCritGEBV(records, candidates, bsp, SP)
+parentSelCritGEBV(records, candidates, trainingpop, bsp, SP)
 }
 \arguments{
 \item{records}{The breeding program \code{records} object. See \code{fillPipeline} for details}
 
-\item{candidates}{Character vector of ids of the candidates to be parents}
+\item{candidates}{Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted}
+
+\item{trainingpop}{chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.}
 
 \item{bsp}{The breeding scheme parameter list}
 

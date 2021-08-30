@@ -35,7 +35,10 @@ specifyBSP(
   useCurrentPhenoTrain = FALSE,
   nCyclesToKeepRecords,
   selCritPipeAdv,
-  selCritPopImprov
+  selCritPopImprov,
+  nTrainPopCycles,
+  nYrsAsCandidates,
+  maxTrainingPopSize
 )
 }
 \arguments{
@@ -116,6 +119,12 @@ genotyped. If nothing is specified, the default will be to genotype all F1.}
 \item{selCritPipeAdv}{function used to determine selection criterion for pipe}
 
 \item{selCritPopImprov}{function used to determine sel crit for pop improv}
+
+\item{nTrainPopCycles}{draw training pop lines only from this number of recent cycles.}
+
+\item{nYrsAsCandidates}{candidates for selection only from this number of recent years}
+
+\item{maxTrainingPopSize}{From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}), subsample this number of lines for training data.}
 }
 \value{
 a named list of of the parameters to specify a breeding scheme simulation

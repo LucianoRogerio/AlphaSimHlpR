@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function to make genomic relation matrices — make_grm • AlphaSimHlpR</title>
+<title>Run population improvement using parent selection — popImprovByParentSel • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,21 @@
 
 
 
-<meta property="og:title" content="Function to make genomic relation matrices — make_grm" />
-<meta property="og:description" content="Function to make a genomic relationship matrix to be used to analyze the
-phenotypic records. So far only works with parentSelCritGEBV
-and popImprovementByParentSel." />
+<meta property="og:title" content="Run population improvement using parent selection — popImprovByParentSel" />
+<meta property="og:description" content="Function to improve a simulated breeding population by one cycle.
+This version is adjusted relative to the original popImprov1Cyc function,
+which drew candidates from the full records$F1 (excluding potentially
+indivs only scored during the current year, if useCurrentPhenoTrain=FALSE).
+My changes:
+nTrainPopCycles: draw training pop clones only from this number of recent cycles.
+nYrsAsCandidates: candidates for selection only from this number of recent years
+maxTrainingPopSize: From the lines in the most recent cycles (indicated by nTrainPopCycles),
+ subsample this number of lines for training data. This is in addition to the &quot;check&quot; (bsp$checks@id)
+ and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
+ All &quot;historical&quot; data will always be used, but the number of maximum training lines will be held constant.
+ Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.
+
+" />
 
 
 
@@ -120,56 +131,53 @@ and popImprovementByParentSel." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Function to make genomic relation matrices</h1>
+    <h1>Run population improvement using parent selection</h1>
     
-    <div class="hidden name"><code>make_grm.Rd</code></div>
+    <div class="hidden name"><code>popImprovByParentSel.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Function to make a genomic relationship matrix to be used to analyze the
-phenotypic <code>records</code>. So far only works with <code>parentSelCritGEBV</code>
-and <code>popImprovementByParentSel</code>.</p>
+    <p>Function to improve a simulated breeding population by one cycle.
+This version is adjusted relative to the original <code>popImprov1Cyc</code> function,
+which drew <code>candidates</code> from the full <code>records$F1</code> (excluding potentially
+indivs only scored during the current year, if <code>useCurrentPhenoTrain=FALSE</code>).
+My changes:</p><ul>
+<li><p><code>nTrainPopCycles</code>: draw training pop clones only from this number of recent cycles.</p></li>
+<li><p><code>nYrsAsCandidates</code>: candidates for selection only from this number of recent years</p></li>
+<li><p><code>maxTrainingPopSize</code>: From the lines in the most recent cycles (indicated by <code>nTrainPopCycles</code>),
+ subsample this number of lines for training data. This is <em>in addition to</em> the "check" (<code>bsp$checks@id</code>)
+ and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
+ All "historical" data will always be used, but the number of maximum training lines will be held constant.
+ Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.</p></li>
+</ul>
+
     </div>
 
-    <pre class="usage"><span class='fu'>make_grm</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>indivs2keep</span>, <span class='va'>bsp</span>, <span class='va'>SP</span>, grmType <span class='op'>=</span> <span class='st'>"add"</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>popImprovByParentSel</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>records</th>
-      <td><p>The breeding program <code>records</code> object. See
-<code>fillPipeline</code> for details</p></td>
-    </tr>
-    <tr>
-      <th>indivs2keep</th>
-      <td><p>chr. vector of id's to be included in the grm. Must be present in <code><a href='https://rdrr.io/r/base/c.html'>c(records$F1,bsp$checks)</a></code>.</p></td>
+      <td><p>The breeding program <code>records</code> object. See <code>fillPipeline</code> for details</p></td>
     </tr>
     <tr>
       <th>bsp</th>
-      <td><p>The breeding scheme parameter list</p></td>
+      <td><p>A list of breeding scheme parameters</p></td>
     </tr>
     <tr>
       <th>SP</th>
-      <td><p>The AlphaSimR SimParam object. Needed to pull the SNP genotypes</p></td>
+      <td><p>The AlphaSimR SimParam object</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A genomic relationship matrix</p>
+    <p>A records object with a new F1 Pop-class object of progeny coming out of a population improvement scheme</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
-Uses <code>genomicMateSelectR</code> functions, which will need to be installed for these to work.</p>
-<p>This version uses the <code><a href='https://rdrr.io/pkg/genomicMateSelectR/man/kinship.html'>genomicMateSelectR::kinship</a></code>.</p>
-<p>Includes a new <code>grmType</code> param, can produce additive and dominance matrices.
-Same matrix as <code>A.mat</code> by default <code>grmType="add"</code>.</p>
-<p><code>records</code> maintains the phenotypic and genotypic records across
-  years and stages. For GEBV analysis, you need the GRM of these individuals.
-  <code>makeGRM</code> assumes the first phenotyping stage (records[[2]]) has all
-  individuals that have been phenotyped. The GRM also includes the
-  unphenotyped new F1 individuals in records[[1]]</p>
+    <p>This function uses penotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
