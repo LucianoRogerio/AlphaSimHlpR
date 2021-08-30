@@ -247,6 +247,9 @@ calculateChkReps <- function(bsp){
 #' @param nCyclesToKeepRecords integer eliminate data on cycles above this num
 #' @param selCritPipeAdv function used to determine selection criterion for pipe
 #' @param selCritPopImprov function used to determine sel crit for pop improv
+#' @param nTrainPopCycles draw training pop lines only from this number of recent cycles.
+#' @param nYrsAsCandidates candidates for selection only from this number of recent years
+#' @param maxTrainingPopSize From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}), subsample this number of lines for training data.
 #' @param nChr integer number of chromosomes for the species
 #' @param effPopSize numeric historic effective population size for the species
 #' @param segSites integer number of sites segregating per chromosome
@@ -294,7 +297,10 @@ specifyBSP <- function(schemeDF,
                        nCyclesToKeepRecords,
                        #nCyclesToRun=NULL, <- also DELETE as not needed arg? inputs instead at runBreedingScheme func
                        selCritPipeAdv,
-                       selCritPopImprov){
+                       selCritPopImprov,
+                       nTrainPopCycles,
+                       nYrsAsCandidates,
+                       maxTrainingPopSize){
 
   bspNew <- list()
   # translate the scheme data.frame schemeDF into correct bsp list-of-named-vectors format
@@ -325,7 +331,7 @@ specifyBSP <- function(schemeDF,
                   "nClonesToNCRP",
                   "phenoF1toStage1", "errVarPreStage1", "useCurrentPhenoTrain",
                   "nCyclesToKeepRecords",
-                  "selCritPipeAdv", "selCritPopImprov")
+                  "selCritPipeAdv", "selCritPopImprov","nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize")
   pipe_parms %<>%
     `names<-`(.,.) %>%
     purrr::map(.,~get(.))
