@@ -12,6 +12,7 @@ Depends:
   AlphaSimR,
   dplyr
 Imports:
+  magrittr,
   tidyr,
   plotrix,
   lme4,
