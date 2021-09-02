@@ -107,7 +107,7 @@ popImprovByParentSel <- function(records, bsp, SP){
 }
 
 
-#' parentSelCritGEBV function
+#' Generate GEBV as genomic parent selection criteria
 #'
 #' \code{parentSelCritGEBV} will compute GEBV of all genotyped individuals using all available phenotypes.
 #' Parents are selected by these criteria e.g. by the \code{popImprov1Cyc populationImprovement function}
@@ -140,6 +140,7 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   crit <- crit[candidates]
   return(crit)
 }
+
 
 
 #' Function to make genomic relation matrices
@@ -210,4 +211,37 @@ gebvPhenoEval <- function(phenoDF, grm){
   }
   return(gebv)
 }
+
+
+
+#' Generate BLUPs as phenotype-only parent selection criteria
+#'
+#' \code{parentSelCritBLUP} will compute BLUPs of the \code{union(candidates,trainpop)} using all historical records but a controlled set of clones.
+#' Only phenotyped individuals are predicted as no genomic covariances are used.
+#' Parents are selected by these criteria e.g. by the \code{popImprovByParentSel populationImprovement function}
+#'
+#' Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
+#' Uses \code{genomicMateSelectR} functions, which will need to be installed for these to work.
+#'
+#' Modified original \code{selCritIID} function.
+#'
+#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param candidates Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted
+#' @param trainingpop chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.
+#' @param bsp The breeding scheme parameter list
+#' @param SP The AlphaSimR SimParam object (needed to pull SNPs)
+#' @return Character vector of the ids of the selected individuals
+#' @details Accesses all individuals in \code{records} to pick the highest ones
+#'
+#' @export
+parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
+  indivs2keep<-union(candidates,trainingpop)
+  phenoDF <- framePhenoRec(records, bsp)
+  # Remove individuals not designated as candidates or trainingpop
+  phenoDF <- phenoDF %>% filter(id %in% indivs2keep)
+  crit <- iidPhenoEval(phenoDF)
+  crit <- crit[names(crit) %in% candidates]
+  return(crit)
+}
+
 
