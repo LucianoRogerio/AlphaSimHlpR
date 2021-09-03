@@ -6,7 +6,7 @@
 #' indivs only scored during the current year, if \code{useCurrentPhenoTrain=FALSE}).
 #' My changes:
 #' \itemize{
-#'  \item \code{nTrainPopCycles}: draw training pop clones only from this number of recent cycles.
+#'  \item \code{nTrainPopCycles}: draw additional training pop clones only from this number of recent cycles.
 #'  \item \code{nYrsAsCandidates}: candidates for selection only from this number of recent years
 #'  \item \code{maxTrainingPopSize}: From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}),
 #'  subsample this number of lines for training data. This is \emph{in addition to} the "check" (\code{bsp$checks@id})
@@ -14,6 +14,7 @@
 #'  All "historical" data will always be used, but the number of maximum training lines will be held constant.
 #'  Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.
 #'  }
+#'  \item The selection criteria \code{parentSelCritBLUP} and \code{parentSelCritGEBV} will allow both `candidates` and the additional training pop lines to be selected for crossing. Previous version only allowed selection of the `candidates`.
 #'
 #' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
 #' @param bsp A list of breeding scheme parameters
@@ -137,7 +138,7 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   # Remove individuals with phenotypes but who do not have geno records
   phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
   crit <- gebvPhenoEval(phenoDF, grm)
-  crit <- crit[candidates]
+  crit <- crit[names(crit) %in% indivs2keep]
   return(crit)
 }
 
@@ -240,7 +241,7 @@ parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
   # Remove individuals not designated as candidates or trainingpop
   phenoDF <- phenoDF %>% filter(id %in% indivs2keep)
   crit <- iidPhenoEval(phenoDF)
-  crit <- crit[names(crit) %in% candidates]
+  crit <- crit[names(crit) %in% indivs2keep]
   return(crit)
 }
 
