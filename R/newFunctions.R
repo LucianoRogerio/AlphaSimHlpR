@@ -398,6 +398,8 @@ genomicMateSelCrit<-function(records, candidates, trainingpop, bsp, SP){
 #' @details This function uses phenotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
 #' @export
 popImprovByMateSel <- function(records, bsp, SP){
+  require(genomicMateSelectR)
+
   # Which phenotypes can be included for model training?
   ### Current year phenotypes?
   trainRec <- records
