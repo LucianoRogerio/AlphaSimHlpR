@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generate GEBV as genomic parent selection criteria — parentSelCritGEBV • AlphaSimHlpR</title>
+<title>Run population improvement using mate selection — popImprovByMateSel • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,14 @@
 
 
 
-<meta property="og:title" content="Generate GEBV as genomic parent selection criteria — parentSelCritGEBV" />
-<meta property="og:description" content="parentSelCritGEBV will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the popImprov1Cyc populationImprovement function" />
+<meta property="og:title" content="Run population improvement using mate selection — popImprovByMateSel" />
+<meta property="og:description" content="Function to improve a simulated breeding population by one cycle.
+Also specify selCritPop=&quot;genomicMateSelCrit&quot; and use the following new bsp arguments to control the predictions and selection:
+modelType: modelTypes: &quot;A&quot;, &quot;AD&quot;, &quot;DirDom&quot;
+crossSelCrit: &quot;MeanBV&quot; (modelTypes: &quot;A&quot;, &quot;AD&quot;, &quot;DirDom&quot;); &quot;MeanTGV&quot; (only with modelType=&quot;DirDom&quot;); &quot;UCparent&quot; (modelTypes: &quot;A&quot;, &quot;AD&quot;, &quot;DirDom&quot;); &quot;UCvariety&quot; (modelTypes: &quot;AD&quot;, &quot;DirDom&quot;)
+propSel: 0-1, prop. of predicted crosses to select, used ONLY to calc the standardized selection intensity (i) and subsequently the usefulness criteria (\(\mu + i \times \sigma\)).
+
+" />
 
 
 
@@ -119,17 +124,22 @@ Parents are selected by these criteria e.g. by the popImprov1Cyc populationImpro
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generate GEBV as genomic parent selection criteria</h1>
+    <h1>Run population improvement using mate selection</h1>
     
-    <div class="hidden name"><code>parentSelCritGEBV.Rd</code></div>
+    <div class="hidden name"><code>popImprovByMateSel.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>parentSelCritGEBV</code> will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populationImprovement function</code></p>
+    <p>Function to improve a simulated breeding population by one cycle.
+Also specify <code>selCritPop="genomicMateSelCrit"</code> and use the following new <code>bsp</code> arguments to control the predictions and selection:</p><ul>
+<li><p><code>modelType</code>: modelTypes: "A", "AD", "DirDom"</p></li>
+<li><p><code>crossSelCrit</code>: "MeanBV" (modelTypes: "A", "AD", "DirDom"); "MeanTGV" (only with modelType="DirDom"); "UCparent" (modelTypes: "A", "AD", "DirDom"); "UCvariety" (modelTypes: "AD", "DirDom")</p></li>
+<li><p><code>propSel</code>: 0-1, prop. of predicted crosses to select, used ONLY to calc the standardized selection intensity (i) and subsequently the usefulness criteria (\(\mu + i \times \sigma\)).</p></li>
+</ul>
+
     </div>
 
-    <pre class="usage"><span class='fu'>parentSelCritGEBV</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>trainingpop</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>popImprovByMateSel</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -139,37 +149,32 @@ Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populatio
       <td><p>The breeding program <code>records</code> object. See <code>fillPipeline</code> for details</p></td>
     </tr>
     <tr>
-      <th>candidates</th>
-      <td><p>Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted</p></td>
-    </tr>
-    <tr>
-      <th>trainingpop</th>
-      <td><p>chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.</p></td>
-    </tr>
-    <tr>
       <th>bsp</th>
-      <td><p>The breeding scheme parameter list</p></td>
+      <td><p>A list of breeding scheme parameters</p></td>
     </tr>
     <tr>
       <th>SP</th>
-      <td><p>The AlphaSimR SimParam object (needed to pull SNPs)</p></td>
+      <td><p>The AlphaSimR SimParam object</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Character vector of the ids of the selected individuals</p>
+    <p>A records object with a new F1 Pop-class object of progeny coming out of a population improvement scheme</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
-Uses <code>genomicMateSelectR</code> functions, which will need to be installed for these to work.</p>
-<p>Modified original <code>selCritGRM</code> function.
-Uses alternative functions <code>make_grm</code> and <code>gebvPhenoEval</code>.</p>
-<p>Accesses all individuals in <code>records</code> to pick the highest ones</p>
+    <p>My changes:</p><ul>
+<li><p><code>nTrainPopCycles</code>: draw training pop clones only from this number of recent cycles.</p></li>
+<li><p><code>nYrsAsCandidates</code>: candidates for selection only from this number of recent years</p></li>
+<li><p><code>maxTrainingPopSize</code>: From the lines in the most recent cycles (indicated by <code>nTrainPopCycles</code>),
+ subsample this number of lines for training data. This is <em>in addition to</em> the "check" (<code>bsp$checks@id</code>)
+ and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
+ All "historical" data will always be used, but the number of maximum training lines will be held constant.
+ Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.</p></li>
+</ul>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-</div></pre>
+<p>This function uses phenotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle</p>
+
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

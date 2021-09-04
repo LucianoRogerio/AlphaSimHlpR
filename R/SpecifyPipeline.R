@@ -300,7 +300,10 @@ specifyBSP <- function(schemeDF,
                        selCritPopImprov,
                        nTrainPopCycles,
                        nYrsAsCandidates,
-                       maxTrainingPopSize){
+                       maxTrainingPopSize,
+                       modelType=NULL,
+                       propSel=0.05,
+                       crossSelCrit=NULL){
 
   bspNew <- list()
   # translate the scheme data.frame schemeDF into correct bsp list-of-named-vectors format
@@ -331,7 +334,9 @@ specifyBSP <- function(schemeDF,
                   "nClonesToNCRP",
                   "phenoF1toStage1", "errVarPreStage1", "useCurrentPhenoTrain",
                   "nCyclesToKeepRecords",
-                  "selCritPipeAdv", "selCritPopImprov","nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize")
+                  "selCritPipeAdv", "selCritPopImprov",
+                  "nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize",
+                  "modelType","propSel","crossSelCrit")
   pipe_parms %<>%
     `names<-`(.,.) %>%
     purrr::map(.,~get(.))

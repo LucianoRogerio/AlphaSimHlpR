@@ -38,7 +38,10 @@ specifyBSP(
   selCritPopImprov,
   nTrainPopCycles,
   nYrsAsCandidates,
-  maxTrainingPopSize
+  maxTrainingPopSize,
+  modelType = NULL,
+  propSel = 0.05,
+  crossSelCrit = NULL
 )
 }
 \arguments{

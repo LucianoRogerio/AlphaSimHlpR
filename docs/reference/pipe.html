@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generate GEBV as genomic parent selection criteria — parentSelCritGEBV • AlphaSimHlpR</title>
+<title>Pipe operator — %&gt;% • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,8 @@
 
 
 
-<meta property="og:title" content="Generate GEBV as genomic parent selection criteria — parentSelCritGEBV" />
-<meta property="og:description" content="parentSelCritGEBV will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the popImprov1Cyc populationImprovement function" />
+<meta property="og:title" content="Pipe operator — %&gt;%" />
+<meta property="og:description" content="See magrittr::%&amp;gt;% for details." />
 
 
 
@@ -119,57 +118,19 @@ Parents are selected by these criteria e.g. by the popImprov1Cyc populationImpro
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generate GEBV as genomic parent selection criteria</h1>
+    <h1>Pipe operator</h1>
     
-    <div class="hidden name"><code>parentSelCritGEBV.Rd</code></div>
+    <div class="hidden name"><code>pipe.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>parentSelCritGEBV</code> will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populationImprovement function</code></p>
+    <p>See <code>magrittr::%&gt;%</code> for details.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>parentSelCritGEBV</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>trainingpop</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='va'>lhs</span> <span class='op'>%&gt;%</span> <span class='va'>rhs</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>records</th>
-      <td><p>The breeding program <code>records</code> object. See <code>fillPipeline</code> for details</p></td>
-    </tr>
-    <tr>
-      <th>candidates</th>
-      <td><p>Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted</p></td>
-    </tr>
-    <tr>
-      <th>trainingpop</th>
-      <td><p>chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.</p></td>
-    </tr>
-    <tr>
-      <th>bsp</th>
-      <td><p>The breeding scheme parameter list</p></td>
-    </tr>
-    <tr>
-      <th>SP</th>
-      <td><p>The AlphaSimR SimParam object (needed to pull SNPs)</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Character vector of the ids of the selected individuals</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
-Uses <code>genomicMateSelectR</code> functions, which will need to be installed for these to work.</p>
-<p>Modified original <code>selCritGRM</code> function.
-Uses alternative functions <code>make_grm</code> and <code>gebvPhenoEval</code>.</p>
-<p>Accesses all individuals in <code>records</code> to pick the highest ones</p>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -13,8 +13,8 @@
 #'  and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
 #'  All "historical" data will always be used, but the number of maximum training lines will be held constant.
 #'  Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.
-#'  }
 #'  \item The selection criteria \code{parentSelCritBLUP} and \code{parentSelCritGEBV} will allow both `candidates` and the additional training pop lines to be selected for crossing. Previous version only allowed selection of the `candidates`.
+#'  }
 #'
 #' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
 #' @param bsp A list of breeding scheme parameters
@@ -245,4 +245,241 @@ parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
   return(crit)
 }
 
+#' Generate predictions of cross means or usefulness as genomic mate selection criteria
+#'
+#' Mates are selected by these criteria e.g. by the \code{popImprovByMateSel populationImprovement function}
+#' Additional arguments to add to the \code{bsp} object to accomplish this:
+#'
+#' \itemize{
+#'  \item \code{modelType}:
+#'  \item \code{crossSelCrit}:
+#'  \item \code{propSel}:
+#' }
+#' Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
+#' Uses \code{genomicMateSelectR} functions, which will need to be installed for these to work.
+#'
+#' Modified original \code{selCritIID} function.
+#'
+#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param candidates Character vector of ids of the candidates to be parents, not necessarily phenotyped but must be predicted
+#' @param trainingpop chr. vector of ids with phenotypes , but not necessarily in the list of selection candidates, but who should be included in the grm / training model.
+#' @param bsp The breeding scheme parameter list
+#' @param SP The AlphaSimR SimParam object (needed to pull SNPs)
+#' @return Character vector of the ids of the selected individuals
+#' @details Accesses all individuals in \code{records} to pick the highest ones
+#'
+#' @export
+genomicMateSelCrit<-function(records, candidates, trainingpop, bsp, SP){
 
+  # first construct the GRM(s)
+  indivs2keep<-union(candidates,trainingpop)
+  grms<-list(A=make_grm(records, indivs2keep, bsp, SP, grmType="add"))
+  if(bsp$modelType=="DirDom"){
+    grms[["D"]]<-make_grm(records, indivs2keep, bsp, SP, grmType="domGenotypic")
+  }
+  # phenotypes
+  phenoDF <- framePhenoRec(records, bsp)
+  # Remove individuals with phenotypes but who do not have geno records
+  phenoDF <- phenoDF[phenoDF$id %in% rownames(grms$A),]
+  # format the blups to please my own program (genomicMateSelectR)
+  blups<-tibble(Trait="trait",
+                TrainingData=list(phenoDF %>%
+                                    rename(drgBLUP=pheno) %>%
+                                    mutate(WT=1/errVar,
+                                           GID=id)))
+  # pull the dosage matrix, including checks
+  dosages<-pullSnpGeno(c(records$F1,bsp$checks)[indivs2keep], simParam=SP)
+  # run genomic predictions (to get marker effects and genomic BLUPs)
+  gpreds<-runGenomicPredictions(modelType=bsp$modelType,selInd=FALSE, SIwts=NULL,
+                                getMarkEffs=TRUE,
+                                returnPEV=FALSE,
+                                blups=blups,grms=grms,dosages=dosages,
+                                ncores=1,nBLASthreads=nBLASthreads)
+  # get the genetic map
+  genmap<-getSnpMap(simParam = SP)
+  m<-genmap$pos;
+  names(m)<-genmap$id
+  # construct the recombination frequency matrix
+  recombFreqMat<-1-(2*genmap2recombfreq(m,nChr = bsp$nChr))
+  # pull the haplotype matrix
+  haploMat<-pullSnpHaplo(c(records$F1,bsp$checks)[indivs2keep], simParam=SP)
+  # change haplotype tags in rownames of the haploMat to please genomicMateSelectR
+  rownames(haploMat) %<>%
+    gsub("_1","_HapA",.) %>%
+    gsub("_2","_HapB",.)
+  # set-up for each possible crossSelCrit
+  if(bsp$crossSelCrit=="MeanBV"){
+    predof<-"GEBV"; predTheMeans<-TRUE; predTheVars<-FALSE; }
+  if(bsp$crossSelCrit=="MeanTGV"){
+    predof<-"GETGV"; predTheMeans<-TRUE; predTheVars<-FALSE; }
+  if(bsp$crossSelCrit=="UCparent"){
+    predof<-"GEBV"; predTheMeans<-TRUE; predTheVars<-TRUE; }
+  if(bsp$crossSelCrit=="UCvariety"){
+    predof<-"GETGV"; predTheMeans<-TRUE; predTheVars<-TRUE; }
+  # parents for which to predict crosses
+  parents<-gpreds$gblups[[1]]  %>%
+    filter(predOf==predof) %>%
+    arrange(desc(trait)) %>%
+    slice(1:bsp$nParents) %$%
+    GID
+  # crosses to predict (all pairwise of parents)
+  CrossesToPredict<-crosses2predict(parents)
+  # predict crosses
+  crossPreds<-predictCrosses(modelType=bsp$modelType,
+                             stdSelInt = intensity(bsp$propSel),
+                             selInd=FALSE, SIwts=NULL,
+                             CrossesToPredict=CrossesToPredict,
+                             snpeffs=gpreds$genomicPredOut[[1]],
+                             dosages=dosages,
+                             haploMat=haploMat,recombFreqMat=recombFreqMat,
+                             ncores=1,nBLASthreads=nBLASthreads,
+                             predTheMeans = predTheMeans,
+                             predTheVars = predTheVars)
+  # post prediction: extract the cross selection criterion
+  if(bsp$crossSelCrit=="MeanBV"){
+    crit<-crossPreds$tidyPreds[[1]] %>%
+      filter(predOf=="BV") %>%
+      select(sireID,damID,predMean) %>%
+      rename(crossSelCrit=predMean) %>%
+      arrange(desc(crossSelCrit))
+  }
+  if(bsp$crossSelCrit=="MeanTGV"){
+    crit<-crossPreds$tidyPreds[[1]] %>%
+      filter(predOf=="TGV") %>%
+      select(sireID,damID,predMean) %>%
+      rename(crossSelCrit=predMean) %>%
+      arrange(desc(crossSelCrit))
+  }
+  if(bsp$crossSelCrit=="UCparent"){
+    crit<-crossPreds$tidyPreds[[1]] %>%
+      filter(predOf=="BV") %>%
+      select(sireID,damID,predUsefulness) %>%
+      rename(crossSelCrit=predUsefulness) %>%
+      arrange(desc(crossSelCrit))
+  }
+  if(bsp$crossSelCrit=="UCvariety"){
+    crit<-crossPreds$tidyPreds[[1]] %>%
+      filter(predOf=="TGV") %>%
+      select(sireID,damID,predUsefulness) %>%
+      rename(crossSelCrit=predUsefulness) %>%
+      arrange(desc(crossSelCrit))
+  }
+
+  return(crit)
+}
+
+
+#' Run population improvement using mate selection
+#'
+#' Function to improve a simulated breeding population by one cycle.
+#' Also specify \code{selCritPop="genomicMateSelCrit"} and use the following new \code{bsp} arguments to control the predictions and selection:
+#' \itemize{
+#'  \item \code{modelType}: modelTypes: "A", "AD", "DirDom"
+#'  \item \code{crossSelCrit}: "MeanBV" (modelTypes: "A", "AD", "DirDom"); "MeanTGV" (only with modelType="DirDom"); "UCparent" (modelTypes: "A", "AD", "DirDom"); "UCvariety" (modelTypes: "AD", "DirDom")
+#'  \item \code{propSel}: 0-1, prop. of predicted crosses to select, used ONLY to calc the standardized selection intensity (i) and subsequently the usefulness criteria (\eqn{\mu + i \times \sigma}).
+#' }
+#'
+#' My changes:
+#' \itemize{
+#'  \item \code{nTrainPopCycles}: draw training pop clones only from this number of recent cycles.
+#'  \item \code{nYrsAsCandidates}: candidates for selection only from this number of recent years
+#'  \item \code{maxTrainingPopSize}: From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}),
+#'  subsample this number of lines for training data. This is \emph{in addition to} the "check" (\code{bsp$checks@id})
+#'  and the lines indicates as selection `candidates` according to the setting of `nYrsAsCandidates`.
+#'  All "historical" data will always be used, but the number of maximum training lines will be held constant.
+#'  Replaces the stage-specific `bsp$trainingPopCycles`, which will be unused in this pipeline, but not deleted from the package.
+#'  }
+#'
+#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param bsp A list of breeding scheme parameters
+#' @param SP The AlphaSimR SimParam object
+#' @return A records object with a new F1 Pop-class object of progeny coming out of a population improvement scheme
+#'
+#' @details This function uses phenotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
+#' @export
+popImprovByMateSel <- function(records, bsp, SP){
+  # Which phenotypes can be included for model training?
+  ### Current year phenotypes?
+  trainRec <- records
+  if (!bsp$useCurrentPhenoTrain){
+    for (stage in 1+1:bsp$nStages){
+      trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
+    }
+  }
+
+  # Which individuals can be selection candidates?
+  ## only individuals that have been genoytped in the last "nYrsAsCandidates"
+  if(bsp$stageToGenotype=="F1"){
+    NrecentProgenySelCands<-(bsp$nProgeny*bsp$nCrosses)*bsp$nYrsAsCandidates
+    candidates<-records$F1@id %>% tail(.,n = NrecentProgenySelCands)
+  } else {
+    candidates<-records[[bsp$stageToGenotype]] %>%
+      tail(.,n=bsp$nYrsAsCandidates) %>%
+      map_df(.,rbind) %$%
+      unique(id) %>%
+      # exclude checks
+      setdiff(.,bsp$checks@id)
+  }
+
+  # How many additional individuals to use as training?
+  ## these are individuals with phenotypes
+  ## but not in the list of selection candidates
+  ## Drawn from the most recent cycles according to "nTrainPopCycles"
+  ## Potentially subsampled according to "maxTrainingPopSize"
+  phenotypedLines<-trainRec[bsp$stageNames] %>%
+    map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
+    map_df(.,rbind) %$%
+    unique(id)
+
+  phenotypedLines_notSelCands<-setdiff(phenotypedLines,candidates)
+  ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
+  maxTPsize<-min(bsp$maxTrainingPopSize,length(phenotypedLines_notSelCands))
+  ## Make sure checks ARE included
+  if(!is.null(bsp$checks)){
+    # sample from the list of non-selection candidates that also are NOT checks
+    trainingpop<-sample(setdiff(phenotypedLines_notSelCands,bsp$checks@id),
+                        size = maxTPsize, replace = F) %>%
+      # include the checks
+      c(.,bsp$checks@id) %>%
+      # vanity: order the ids
+      .[order(as.integer(.))]
+  } else {
+    trainingpop<-sample(phenotypedLines_notSelCands,
+                        size = maxTPsize, replace = F) %>%
+      .[order(as.integer(.))]
+  }
+
+  # require two inputs for downstream SelCrit
+  ## only compatible SelCrit so far will therefore be "parentSelCritGEBV"
+  ## "candidates" and "trainingpop": non-overlapping sets,
+  ## available pheno records (in "trainRec") for any of the "candidates"
+  ## will be automatically included in predictions
+  crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
+
+  # select the top nCrosses
+  crossingPlan<-crit %>%
+    slice_max(order_by = crossSelCrit,
+              n = bsp$nCrosses) %>%
+    select(sireID,damID) %>%
+    as.matrix
+
+  # extract a pop-object of those parents
+  parents <- records$F1[crossingPlan %>% as.vector %>% unique]
+  # make crosses
+  progeny <- makeCross(pop = parents,
+                       crossPlan = crossingPlan,
+                       nProgeny = bsp$nProgeny, simParam=SP)
+
+  # not 100% sure, but seems to store the "year" in the @fixEff slot of "progeny"
+  progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
+  parentsUsed <- unique(c(progeny@mother, progeny@father))
+  stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
+  stgCyc <- table(stgCyc[1,], stgCyc[2,])
+  strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
+  for (i in 1:nrow(stgCyc)){
+    stage <- as.integer(rownames(stgCyc)[i])
+    records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
+  }
+  records$F1 <- c(records$F1, progeny)
+  return(records)
+}

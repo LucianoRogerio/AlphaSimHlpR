@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generate GEBV as genomic parent selection criteria — parentSelCritGEBV • AlphaSimHlpR</title>
+<title>Generate predictions of cross means or usefulness as genomic mate selection criteria — genomicMateSelCrit • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,9 @@
 
 
 
-<meta property="og:title" content="Generate GEBV as genomic parent selection criteria — parentSelCritGEBV" />
-<meta property="og:description" content="parentSelCritGEBV will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the popImprov1Cyc populationImprovement function" />
+<meta property="og:title" content="Generate predictions of cross means or usefulness as genomic mate selection criteria — genomicMateSelCrit" />
+<meta property="og:description" content="Mates are selected by these criteria e.g. by the popImprovByMateSel populationImprovement function
+Additional arguments to add to the bsp object to accomplish this:" />
 
 
 
@@ -119,17 +119,17 @@ Parents are selected by these criteria e.g. by the popImprov1Cyc populationImpro
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generate GEBV as genomic parent selection criteria</h1>
+    <h1>Generate predictions of cross means or usefulness as genomic mate selection criteria</h1>
     
-    <div class="hidden name"><code>parentSelCritGEBV.Rd</code></div>
+    <div class="hidden name"><code>genomicMateSelCrit.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>parentSelCritGEBV</code> will compute GEBV of all genotyped individuals using all available phenotypes.
-Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populationImprovement function</code></p>
+    <p>Mates are selected by these criteria e.g. by the <code>popImprovByMateSel populationImprovement function</code>
+Additional arguments to add to the <code>bsp</code> object to accomplish this:</p>
     </div>
 
-    <pre class="usage"><span class='fu'>parentSelCritGEBV</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>trainingpop</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>genomicMateSelCrit</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>trainingpop</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -161,15 +161,16 @@ Parents are selected by these criteria e.g. by the <code>popImprov1Cyc populatio
     <p>Character vector of the ids of the selected individuals</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
+    
+<ul>
+<li><p><code>modelType</code>:</p></li>
+<li><p><code>crossSelCrit</code>:</p></li>
+<li><p><code>propSel</code>:</p></li>
+</ul><p>Setting up to distinguish between parent and cross selection and additive and non-additive predictions.
 Uses <code>genomicMateSelectR</code> functions, which will need to be installed for these to work.</p>
-<p>Modified original <code>selCritGRM</code> function.
-Uses alternative functions <code>make_grm</code> and <code>gebvPhenoEval</code>.</p>
+<p>Modified original <code>selCritIID</code> function.</p>
 <p>Accesses all individuals in <code>records</code> to pick the highest ones</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
