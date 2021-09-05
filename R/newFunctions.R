@@ -210,7 +210,7 @@ gebvPhenoEval <- function(phenoDF, grm){
     gebv <- tapply(phenoDF$pheno, phenoDF$id, mean)
     names(gebv) <- namesGEBV
   }
-  detach("package:sommer",unload = T); detach("package:MASS",unload = T)
+  #detach("package:sommer",unload = T); detach("package:MASS",unload = T)
   return(gebv)
 }
 
