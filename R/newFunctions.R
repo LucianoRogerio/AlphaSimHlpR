@@ -466,7 +466,8 @@ popImprovByMateSel <- function(records, bsp, SP){
     as.matrix
 
   # extract a pop-object of those parents
-  parents <- records$F1[crossingPlan %>% as.vector %>% unique]
+  ## potentially included the checks as parents _if_ selected
+  parents <- c(records$F1,bsp$checks)[crossingPlan %>% as.vector %>% unique]
   # make crosses
   progeny <- makeCross(pop = parents,
                        crossPlan = crossingPlan,
