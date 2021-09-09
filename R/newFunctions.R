@@ -138,7 +138,8 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   # Remove individuals with phenotypes but who do not have geno records
   phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
   crit <- gebvPhenoEval(phenoDF, grm)
-  crit <- crit[names(crit) %in% indivs2keep]
+  # exclude the checks from consideration as candidates
+  crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]
   return(crit)
 }
 
@@ -242,7 +243,8 @@ parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
   # Remove individuals not designated as candidates or trainingpop
   phenoDF <- phenoDF %>% filter(id %in% indivs2keep)
   crit <- iidPhenoEval(phenoDF)
-  crit <- crit[names(crit) %in% indivs2keep]
+  # exclude the checks from consideration as candidates
+  crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]
   return(crit)
 }
 
@@ -298,7 +300,7 @@ genomicMateSelCrit<-function(records, candidates, trainingpop, bsp, SP){
                                 ncores=1,nBLASthreads=nBLASthreads)
   # get the genetic map
   genmap<-getSnpMap(simParam = SP)
-  m<-genmap$pos;
+  m<-genmap$pos*100; # convert it to centimorgans
   names(m)<-genmap$id
   # construct the recombination frequency matrix
   recombFreqMat<-1-(2*genmap2recombfreq(m,nChr = bsp$nChr))
@@ -319,7 +321,9 @@ genomicMateSelCrit<-function(records, candidates, trainingpop, bsp, SP){
     predof<-"GETGV"; predTheMeans<-TRUE; predTheVars<-TRUE; }
   # parents for which to predict crosses
   parents<-gpreds$gblups[[1]]  %>%
-    filter(predOf==predof) %>%
+    filter(predOf==predof,
+           # don't let the checks be considered as parents
+           !GID %in% bsp$checks@id) %>%
     arrange(desc(trait)) %>%
     slice(1:bsp$nParents) %$%
     GID
@@ -418,7 +422,7 @@ popImprovByMateSel <- function(records, bsp, SP){
   } else {
     candidates<-records[[bsp$stageToGenotype]] %>%
       tail(.,n=bsp$nYrsAsCandidates) %>%
-      map_df(.,rbind) %$%
+      map_df(.,bind_rows) %$%
       unique(id) %>%
       # exclude checks
       setdiff(.,bsp$checks@id)
@@ -431,7 +435,7 @@ popImprovByMateSel <- function(records, bsp, SP){
   ## Potentially subsampled according to "maxTrainingPopSize"
   phenotypedLines<-trainRec[bsp$stageNames] %>%
     map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
-    map_df(.,rbind) %$%
+    map_df(.,bind_rows) %$%
     unique(id)
 
   phenotypedLines_notSelCands<-setdiff(phenotypedLines,candidates)
@@ -467,8 +471,7 @@ popImprovByMateSel <- function(records, bsp, SP){
     as.matrix
 
   # extract a pop-object of those parents
-  ## potentially included the checks as parents _if_ selected
-  parents <- c(records$F1,bsp$checks)[crossingPlan %>% as.vector %>% unique]
+  parents <- records$F1[crossingPlan %>% as.vector %>% unique]
   # make crosses
   progeny <- makeCross(pop = parents,
                        crossPlan = crossingPlan,
