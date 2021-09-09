@@ -169,7 +169,7 @@ iidPhenoEval <- function(phenoDF){
     blup <- tapply(phenoDF$pheno, phenoDF$id, mean)
     names(blup) <- namesBlup
   }
-  #detach("package:lme4",unload = T); detach("package:Matrix",unload = T);
+  detach("package:lme4",unload = T); detach("package:Matrix",unload = T);
   return(blup)
 }
 
@@ -219,7 +219,7 @@ grmPhenoEval <- function(phenoDF, grm){
     blup <- tapply(phenoDF$pheno, phenoDF$id, mean)
     names(blup) <- namesBlup
   }
-  #detach("package:sommer",unload = T); detach("package:MASS",unload = T);
+  detach("package:sommer",unload = T); detach("package:MASS",unload = T);
   return(blup)
 }
 
