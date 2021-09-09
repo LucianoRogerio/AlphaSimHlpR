@@ -286,7 +286,6 @@ specifyBSP <- function(schemeDF,
                        segSites,nQTL,nSNP,genVar,
                        gxeVar=NULL,gxyVar=NULL,gxlVar=NULL,gxyxlVar=NULL,
                        meanDD=0,varDD=0,relAA=0,
-                       #nStages, <- DELETE. not needed as an arg?
                        stageToGenotype,
                        nParents,nCrosses,nProgeny,
                        usePolycrossNursery=FALSE,nSeeds=NULL,
@@ -295,7 +294,6 @@ specifyBSP <- function(schemeDF,
                        phenoF1toStage1=FALSE,errVarPreStage1=NULL,
                        useCurrentPhenoTrain=FALSE,
                        nCyclesToKeepRecords,
-                       #nCyclesToRun=NULL, <- also DELETE as not needed arg? inputs instead at runBreedingScheme func
                        selCritPipeAdv,
                        selCritPopImprov,
                        nTrainPopCycles,
@@ -303,7 +301,8 @@ specifyBSP <- function(schemeDF,
                        maxTrainingPopSize,
                        modelType=NULL,
                        propSel=0.05,
-                       crossSelCrit=NULL){
+                       crossSelCrit=NULL,
+                       nCrossPredCores=1){
 
   bspNew <- list()
   # translate the scheme data.frame schemeDF into correct bsp list-of-named-vectors format
@@ -336,7 +335,7 @@ specifyBSP <- function(schemeDF,
                   "nCyclesToKeepRecords",
                   "selCritPipeAdv", "selCritPopImprov",
                   "nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize",
-                  "modelType","propSel","crossSelCrit")
+                  "modelType","propSel","crossSelCrit","nCrossPredCores")
   pipe_parms %<>%
     `names<-`(.,.) %>%
     purrr::map(.,~get(.))

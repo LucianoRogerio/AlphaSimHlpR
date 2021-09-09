@@ -41,7 +41,8 @@ specifyBSP(
   maxTrainingPopSize,
   modelType = NULL,
   propSel = 0.05,
-  crossSelCrit = NULL
+  crossSelCrit = NULL,
+  nCrossPredCores = 1
 )
 }
 \arguments{

@@ -337,7 +337,7 @@ genomicMateSelCrit<-function(records, candidates, trainingpop, bsp, SP){
                              snpeffs=gpreds$genomicPredOut[[1]],
                              dosages=dosages,
                              haploMat=haploMat,recombFreqMat=recombFreqMat,
-                             ncores=1,nBLASthreads=nBLASthreads,
+                             ncores=bsp$nCrossPredCores,nBLASthreads=nBLASthreads,
                              predTheMeans = predTheMeans,
                              predTheVars = predTheVars)
   # post prediction: extract the cross selection criterion
