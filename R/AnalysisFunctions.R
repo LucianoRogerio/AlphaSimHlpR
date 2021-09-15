@@ -156,11 +156,10 @@ makeGRM <- function(records, bsp, SP){
 #'
 #' @export
 iidPhenoEval <- function(phenoDF){
-  require(lme4)
-  phenoDF$errVar <- 1/phenoDF$errVar # Make into weights
+    phenoDF$errVar <- 1/phenoDF$errVar # Make into weights
   phenoDF <- phenoDF %>% dplyr::mutate(entryChk=if_else(isChk=="check", id, "-1"))
-  fm <- lmer(pheno ~ entryChk + (1|id:isChk), weights=errVar, data=phenoDF)
-  blup <- as.matrix(ranef(fm)[[1]])[,1] # Make into matrix to get names
+  fm <- lme4::lmer(pheno ~ entryChk + (1|id:isChk), weights=errVar, data=phenoDF)
+  blup <- as.matrix(lme4::ranef(fm)[[1]])[,1] # Make into matrix to get names
   names(blup) <- (names(blup) %>% strsplit(":", fixed=T) %>% unlist %>%
                   matrix(nrow=2))[1,]
   # Ensure output has variation: needed for optimal contributions
@@ -169,7 +168,6 @@ iidPhenoEval <- function(phenoDF){
     blup <- tapply(phenoDF$pheno, phenoDF$id, mean)
     names(blup) <- namesBlup
   }
-  detach("package:lme4",unload = T); detach("package:Matrix",unload = T);
   return(blup)
 }
 
