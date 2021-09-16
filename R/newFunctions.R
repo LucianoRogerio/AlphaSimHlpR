@@ -466,7 +466,8 @@ popImprovByMateSel <- function(records, bsp, SP){
   # select the top nCrosses
   crossingPlan<-crit %>%
     slice_max(order_by = crossSelCrit,
-              n = bsp$nCrosses) %>%
+              n = bsp$nCrosses,
+              with_ties = F) %>%
     select(sireID,damID) %>%
     as.matrix
 
