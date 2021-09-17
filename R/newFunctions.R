@@ -28,7 +28,7 @@ popImprovByParentSel <- function(records, bsp, SP){
   ### Current year phenotypes?
   trainRec <- records
   if (!bsp$useCurrentPhenoTrain){
-    for (stage in 1+1:bsp$nStages){
+    for (stage in bsp$stageNames){
       trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
     }
   }
@@ -95,14 +95,14 @@ popImprovByParentSel <- function(records, bsp, SP){
   }
   # not 100% sure, but seems to store the "year" in the @fixEff slot of "progeny"
   progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
-  parentsUsed <- unique(c(progeny@mother, progeny@father))
-  stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
-  stgCyc <- table(stgCyc[1,], stgCyc[2,])
-  strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
-  for (i in 1:nrow(stgCyc)){
-    stage <- as.integer(rownames(stgCyc)[i])
-    records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
-  }
+  # parentsUsed <- unique(c(progeny@mother, progeny@father))
+  # stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
+  # stgCyc <- table(stgCyc[1,], stgCyc[2,])
+  # strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
+  # for (i in 1:nrow(stgCyc)){
+  #   stage <- as.integer(rownames(stgCyc)[i])
+  #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
+  # }
   records$F1 <- c(records$F1, progeny)
   return(records)
 }
@@ -409,7 +409,7 @@ popImprovByMateSel <- function(records, bsp, SP){
   ### Current year phenotypes?
   trainRec <- records
   if (!bsp$useCurrentPhenoTrain){
-    for (stage in 1+1:bsp$nStages){
+    for (stage in bsp$stageNames){
       trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
     }
   }
@@ -480,14 +480,14 @@ popImprovByMateSel <- function(records, bsp, SP){
 
   # not 100% sure, but seems to store the "year" in the @fixEff slot of "progeny"
   progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
-  parentsUsed <- unique(c(progeny@mother, progeny@father))
-  stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
-  stgCyc <- table(stgCyc[1,], stgCyc[2,])
-  strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
-  for (i in 1:nrow(stgCyc)){
-    stage <- as.integer(rownames(stgCyc)[i])
-    records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
-  }
+  #parentsUsed <- unique(c(progeny@mother, progeny@father))
+  # stgCyc <- sapply(parentsUsed, AlphaSimHlpR:::whereIsID, records=records)
+  # stgCyc <- table(stgCyc[1,], stgCyc[2,])
+  # strtStgOut <- nrow(records$stageOutputs) - bsp$nStages - 1
+  # for (i in 1:nrow(stgCyc)){
+  #   stage <- as.integer(rownames(stgCyc)[i])
+  #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
+  # }
   records$F1 <- c(records$F1, progeny)
   return(records)
 }
