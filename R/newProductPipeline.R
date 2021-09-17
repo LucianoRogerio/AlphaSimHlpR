@@ -36,14 +36,14 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
   newF1Idx <- nGenoRec - nF1 + 1:nF1
   id <- records$F1[newF1Idx]@id
   records$stageOutputs <- records$stageOutputs %>%
-    bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
+      dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
   # Will be added to the phenotype records
   toAdd <- list()
   for(stage in bsp$stageNames){
     # Make a summary for this stage
     id <- last(records[[stage]])$id[1:bsp$nEntries[stage]]
     records$stageOutputs<-records$stageOutputs %>%
-      bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
+      dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
                                             stage=which(bsp$stageNames==stage),
                                             year=year, bsp=bsp))
     if(which(bsp$stageNames==stage) == 1){
@@ -77,7 +77,7 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
       varE <- bsp$gxyVar + (bsp$gxlVar + bsp$gxyxlVar + bsp$errVars[stage] / bsp$chkReps[stage]) / bsp$nLocs[stage]
       chkPheno <- setPheno(bsp$checks[1:bsp$nChks[stage]], varE=varE, reps=1, simParam=SP)
       chkRec <- phenoRecFromPop(chkPheno, bsp, stage, checks=T)
-      phenoRec <- bind_rows(phenoRec, chkRec)
+      phenoRec <- dplyr::bind_rows(phenoRec, chkRec)
     }
     toAdd <- c(toAdd, list(phenoRec))
   }#END 1:nStages
@@ -138,14 +138,14 @@ dataframePhenoRec <- function(records, bsp){
 
   allPheno<-tibble(Stage=names(records[stages2frame]),
                    Records=records[stages2frame]) %>%
-    mutate(Records=map2(Stage,Records,function(Stage,Records){
+    dplyr::mutate(Records=purrr::map2(Stage,Records,function(Stage,Records){
       if(Stage %in% stages_during_burn_in){
-        phenodf<-tibble(year=1:length(Records),df=Records) %>% unnest(df) }
+        phenodf<-tibble(year=1:length(Records),df=Records) %>% tidyr::unnest(df) }
       if(Stage %in% new_stages){
         phenodf<-tibble(year=(bsp$maxYearBurnInStage+1):(bsp$maxYearBurnInStage+length(Records)),
-                        df=Records) %>% unnest(df) }
+                        df=Records) %>% tidyr::unnest(df) }
       return(phenodf)})) %>%
-    select(-Stage) %>%
-    unnest(Records)
+    dplyr::select(-Stage) %>%
+    tidyr::unnest(Records)
   return(allPheno)
 }
