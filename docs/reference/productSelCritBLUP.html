@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>iidPhenoEval function — iidPhenoEval • AlphaSimHlpR</title>
+<title>productSelCritBLUP function — productSelCritBLUP • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="iidPhenoEval function — iidPhenoEval" />
-<meta property="og:description" content="function to take a data.frame coming from framePhenoRec and analyze it with individuals as a random effect with an IID covariance matrix" />
+<meta property="og:title" content="productSelCritBLUP function — productSelCritBLUP" />
+<meta property="og:description" content="function to select parents among individuals with phenotypes, assuming individual effects are IID" />
 
 
 
@@ -118,38 +118,45 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>iidPhenoEval function</h1>
+    <h1>productSelCritBLUP function</h1>
     
-    <div class="hidden name"><code>iidPhenoEval.Rd</code></div>
+    <div class="hidden name"><code>productSelCritBLUP.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>function to take a data.frame coming from framePhenoRec and analyze it with individuals as a random effect with an IID covariance matrix</p>
+    <p>function to select parents among individuals with phenotypes, assuming individual effects are IID</p>
     </div>
 
-    <pre class="usage"><span class='fu'>iidPhenoEval</span><span class='op'>(</span><span class='va'>phenoDF</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>productSelCritBLUP</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>candidates</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>phenoDF</th>
-      <td><p>A data.frame of phenotypic observations. See <code>framePhenoRec</code> for details.</p></td>
+      <th>records</th>
+      <td><p>The breeding program <code>records</code> object. See <code>fillPipeline</code> for details</p></td>
+    </tr>
+    <tr>
+      <th>candidates</th>
+      <td><p>Character vector of ids of the candidates to be parents</p></td>
+    </tr>
+    <tr>
+      <th>bsp</th>
+      <td><p>The breeding scheme parameter list</p></td>
+    </tr>
+    <tr>
+      <th>SP</th>
+      <td><p>The AlphaSimR SimParam object (not used, here for uniformity)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Named real vector of the BLUPs of all individuals in phenoDF (names are the individual ids), with appropriate weights by error variance of the observation</p>
+    <p>An IID BLUP of the trait of the candidates</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Given all the phenotypic records calculate the best prediction of the genotypic value for each individual using all its records</p>
+    <p>Accesses all individuals in <code>records</code> to pick the highest among candidates. If candidates do not have records, a random sample is returned</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>phenoDF</span> <span class='op'>&lt;-</span> <span class='fu'><a href='framePhenoRec.html'>framePhenoRec</a></span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in framePhenoRec(records, bsp): object 'bsp' not found</span></div><div class='input'><span class='va'>iidBLUPs</span> <span class='op'>&lt;-</span> <span class='fu'>iidPhenoEval</span><span class='op'>(</span><span class='va'>phenoDF</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in iidPhenoEval(phenoDF): object 'phenoDF' not found</span></div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

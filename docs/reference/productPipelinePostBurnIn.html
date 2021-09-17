@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>iidPhenoEval function — iidPhenoEval • AlphaSimHlpR</title>
+<title>productPipeline function for when a new bsp object has been supplied — productPipelinePostBurnIn • AlphaSimHlpR</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="iidPhenoEval function — iidPhenoEval" />
-<meta property="og:description" content="function to take a data.frame coming from framePhenoRec and analyze it with individuals as a random effect with an IID covariance matrix" />
+<meta property="og:title" content="productPipeline function for when a new bsp object has been supplied — productPipelinePostBurnIn" />
+<meta property="og:description" content="Example: post burn-in" />
 
 
 
@@ -118,37 +118,56 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>iidPhenoEval function</h1>
+    <h1>productPipeline function for when a new bsp object has been supplied</h1>
     
-    <div class="hidden name"><code>iidPhenoEval.Rd</code></div>
+    <div class="hidden name"><code>productPipelinePostBurnIn.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>function to take a data.frame coming from framePhenoRec and analyze it with individuals as a random effect with an IID covariance matrix</p>
+    <p>Example: post burn-in</p>
     </div>
 
-    <pre class="usage"><span class='fu'>iidPhenoEval</span><span class='op'>(</span><span class='va'>phenoDF</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>productPipelinePostBurnIn</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>phenoDF</th>
-      <td><p>A data.frame of phenotypic observations. See <code>framePhenoRec</code> for details.</p></td>
+      <th>records</th>
+      <td><p>The breeding program <code>records</code> object. See <code>fillPipeline</code> for details</p></td>
+    </tr>
+    <tr>
+      <th>bsp</th>
+      <td><p>the original parameter set used</p></td>
+    </tr>
+    <tr>
+      <th>SP</th>
+      <td><p>the AlphaSimR SimParam object</p></td>
+    </tr>
+    <tr>
+      <th>newbsp</th>
+      <td><p>the new list of breeding scheme parameters</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Named real vector of the BLUPs of all individuals in phenoDF (names are the individual ids), with appropriate weights by error variance of the observation</p>
+    <p>A records object that has new records created by advancing by a generation</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Given all the phenotypic records calculate the best prediction of the genotypic value for each individual using all its records</p>
+    <p>function to advance a simulated breeding product pipeline forward by one generation. See Gaynor et al. 2017 for the general idea.</p>
+<p>The breeding program product pipeline will have been set by initializeFunc. This function moves the breeding program along by one generation and saves all the resulting phenotypes to the records object.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>phenoDF</span> <span class='op'>&lt;-</span> <span class='fu'><a href='framePhenoRec.html'>framePhenoRec</a></span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in framePhenoRec(records, bsp): object 'bsp' not found</span></div><div class='input'><span class='va'>iidBLUPs</span> <span class='op'>&lt;-</span> <span class='fu'>iidPhenoEval</span><span class='op'>(</span><span class='va'>phenoDF</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in iidPhenoEval(phenoDF): object 'phenoDF' not found</span></div><div class='input'>
+    <pre class="examples"><div class='input'><span class='va'>bsp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='specifyPipeline.html'>specifyPipeline</a></span><span class='op'>(</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in if (bsp$nSNP + bsp$nQTL &gt;= bsp$segSites) {    print("The number of segregating sites (segSites) has to be greater than the number of SNPs (nSNP) and the number of QTL (nQTL). segSites set 10% bigger than nSNP + nQTL")    bsp$segSites &lt;- round((bsp$nSNP + bsp$nQTL) * 1.1) + 1}: argument is of length zero</span></div><div class='input'><span class='va'>bsp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='specifyPopulation.html'>specifyPopulation</a></span><span class='op'>(</span><span class='va'>bsp</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in mget(setdiff(ls(), "bspNew")): object 'bsp' not found</span></div><div class='input'><span class='va'>initList</span> <span class='op'>&lt;-</span> <span class='fu'>initializeFunc</span><span class='op'>(</span><span class='va'>bsp</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in initializeFunc(bsp): could not find function "initializeFunc"</span></div><div class='input'><span class='va'>SP</span> <span class='op'>&lt;-</span> <span class='va'>initList</span><span class='op'>$</span><span class='va'>SP</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'initList' not found</span></div><div class='input'><span class='va'>bsp</span> <span class='op'>&lt;-</span> <span class='va'>initList</span><span class='op'>$</span><span class='va'>bsp</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'initList' not found</span></div><div class='input'><span class='va'>records</span> <span class='op'>&lt;-</span> <span class='va'>initList</span><span class='op'>$</span><span class='va'>records</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'initList' not found</span></div><div class='input'><span class='va'>records</span> <span class='op'>&lt;-</span> <span class='fu'><a href='productPipeline.html'>productPipeline</a></span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in productPipeline(records, bsp, SP): object 'records' not found</span></div><div class='input'><span class='va'>records</span> <span class='op'>&lt;-</span> <span class='fu'>popImprov1</span><span class='op'>(</span><span class='va'>records</span>, <span class='va'>bsp</span>, <span class='va'>SP</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in popImprov1(records, bsp, SP): could not find function "popImprov1"</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
