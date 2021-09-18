@@ -132,7 +132,8 @@ productSelCritBLUP <- function(records, candidates, bsp, SP){
 #' @export
 dataframePhenoRec <- function(records, bsp){
   stages2frame<-names(records)[!names(records) %in% c("F1","stageOutputs")]
-  stages_during_burn_in<-bsp$burnInBSP$stageNames
+  if(!is.null(bsp$burnInBSP)){ stages_during_burn_in<-bsp$burnInBSP$stageNames } else {
+    stages_during_burn_in<-bsp$stageNames }
   current_stages<-bsp$stageNames
   new_stages<-current_stages[!current_stages %in% stages_during_burn_in]
 
@@ -141,9 +142,10 @@ dataframePhenoRec <- function(records, bsp){
     dplyr::mutate(Records=purrr::map2(Stage,Records,function(Stage,Records){
       if(Stage %in% stages_during_burn_in){
         phenodf<-tibble(year=1:length(Records),df=Records) %>% tidyr::unnest(df) }
-      if(Stage %in% new_stages){
-        phenodf<-tibble(year=(bsp$maxYearBurnInStage+1):(bsp$maxYearBurnInStage+length(Records)),
-                        df=Records) %>% tidyr::unnest(df) }
+      if(length(new_stages)>0){
+        if(Stage %in% new_stages){
+          phenodf<-tibble(year=(bsp$maxYearBurnInStage+1):(bsp$maxYearBurnInStage+length(Records)),
+                          df=Records) %>% tidyr::unnest(df) } }
       return(phenodf)})) %>%
     dplyr::select(-Stage) %>%
     tidyr::unnest(Records)
