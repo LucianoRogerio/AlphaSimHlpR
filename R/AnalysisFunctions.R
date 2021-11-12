@@ -85,7 +85,7 @@ phenoRecFromPop <- function(pop, bsp, stage, checks=FALSE){
   varE <- bsp$gxyVar + (bsp$gxlVar + bsp$gxyxlVar + bsp$errVars[stage] / nReps) / bsp$nLocs[stage]
   # Set this up for the lmer method distinguishing checks from experimentals
   phenoRec <- tibble(id=pop@id, mother=pop@mother, father=pop@father,
-                     stage=if_else(is.character(stage),stage,bsp$stageNames[stage]),
+                     stage=if_else(is.character(stage),as.character(stage),bsp$stageNames[stage]),
                      isChk=if_else(checks, "check", "exptl"),
                      pheno=pheno(pop), genoVal=gv(pop), errVar=varE)
   return(phenoRec)
