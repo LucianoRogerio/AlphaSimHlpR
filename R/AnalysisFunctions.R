@@ -1,10 +1,4 @@
-#' packages installed at the machine
-#'
 
-ip <- as.data.frame(installed.packages())$Package
-
-#'
-#'
 #' mean_records function
 #'
 #' function to calculate the mean genotypic value at each cycle and stage
