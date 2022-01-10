@@ -30,5 +30,4 @@ Trying to provide some flexibility in what results AlphaSimHlpR generates from a
 }
 \examples{
 records$stageOutputs <- records$stageOutputs \%>\% bind_rows(stageOutputs(id, records$F1, selCrit, stage, year, bsp))
-
 }

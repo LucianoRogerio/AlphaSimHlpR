@@ -50,7 +50,7 @@ productPipeline <- function(records, bsp, SP){
   toAdd <- list()
   for (stage in 1:bsp$nStages){
     # Make a summary for this stage
-    id <- last(records[[stage+1]])$id[1:bsp$nEntries[stage]]
+    id <- last(records[[stage+1]])$id[1:bsp$nEntries[stage]] %>% .[!is.na(.)]
     records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=stage, year=year, bsp=bsp))
 
     if (stage == 1){ # Stage 1 different: no phenotypes but full Pop-class
@@ -113,7 +113,7 @@ productPipeline <- function(records, bsp, SP){
 #'
 #' @examples
 #' records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id, records$F1, selCrit, stage, year, bsp))
-#'
+#' @export
 stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
   stageName <- c("F1", bsp$stageNames)[stage+1]
   f1 <- f1[id]
