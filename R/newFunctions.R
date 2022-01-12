@@ -137,7 +137,7 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   phenoDF <- framePhenoRec(records, bsp)
   # Remove individuals with phenotypes but who do not have geno records
   phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
-  crit <- gebvPhenoEval(phenoDF, grm)
+  crit <- grmPhenoEval(phenoDF, grm)
   # exclude the checks from consideration as candidates
   crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]
   return(crit)

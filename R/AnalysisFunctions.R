@@ -195,7 +195,10 @@ grmPhenoEval <- function(phenoDF, grm){
       phenoDF$id <- factor(phenoDF$id, levels=rownames(grm)) # Enable prediction
       phenoDF$wgt <- 1/phenoDF$errVar # Make into weights
 
-      print(dim(grm))  # Test for obtain the estimative of the G dimension
+      # Test for obtain the info from Simulations
+      timesP <- rbind(timesP, c("DuringSim",
+                                proc.time()[3],
+                                dim(grm)))
 
       grm <- grm + diag(1e-6, nrow = nrow(grm))
       suppressMessages(Ginv <<- G.inverse(G = grm, sparseform = T, bend = T)$Ginv)
@@ -212,9 +215,12 @@ grmPhenoEval <- function(phenoDF, grm){
       names(blup) <- sapply(strsplit(names(blup), split = "_", fixed = T), function(x) (x[2]))
     }
   } else {
-    require(sommer)
+    suppressMessages(require(sommer))
 
-    print(grm)  # Test for obtain the estimative of the G dimension
+    # Test for obtain info from simulations
+    timesP <<- rbind(timesP, c("DuringSim",
+                               proc.time()[3],
+                               dim(grm)))
 
     phenoDF$id <- factor(phenoDF$id, levels=rownames(grm)) # Enable prediction
     phenoDF$wgt <- 1/phenoDF$errVar # Make into weights
