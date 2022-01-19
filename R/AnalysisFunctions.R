@@ -186,7 +186,7 @@ iidPhenoEval <- function(phenoDF){
 
 
 grmPhenoEval <- function(phenoDF, grm){
-  if("asreml"%in%installed.packages()) {
+  if(!is.null(sessionInfo()$otherPkgs$asreml)) {
     if(suppressMessages(asreml::asreml.license.status()$expiryDays>0)) {
       suppressMessages(require(asreml)); suppressMessages(require(ASRgenomics))
 
