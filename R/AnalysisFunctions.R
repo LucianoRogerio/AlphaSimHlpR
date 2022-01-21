@@ -187,8 +187,8 @@ iidPhenoEval <- function(phenoDF){
 
 grmPhenoEval <- function(phenoDF, grm){
   if(!is.null(sessionInfo()$otherPkgs$asreml)) {
-    #if(suppressMessages(asreml::asreml.license.status()$expiryDays>0)) {
-      #suppressMessages(require(asreml)); suppressMessages(require(ASRgenomics))
+    if(suppressMessages(asreml::asreml.license.status()$expiryDays>0)) {
+      suppressMessages(require(asreml)); suppressMessages(require(ASRgenomics))
 
       grm <- grm[order(as.numeric(rownames(grm))), order(as.numeric(colnames(grm)))]
       phenoDF <- phenoDF[with(phenoDF,order(as.numeric(id), year)),]
@@ -213,7 +213,7 @@ grmPhenoEval <- function(phenoDF, grm){
 
       blup <- summary(fm, coef = T)$coef.random[,"solution"]
       names(blup) <- sapply(strsplit(names(blup), split = "_", fixed = T), function(x) (x[2]))
-    #}
+    }
   } else {
     suppressMessages(require(sommer))
 
