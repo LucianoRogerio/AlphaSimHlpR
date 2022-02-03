@@ -34,17 +34,44 @@ popImprovByParentSel <- function(records, bsp, SP){
   }
 
   # Which individuals can be selection candidates?
-  ## only individuals that have been genoytped in the last "nYrsAsCandidates"
+  ## only individuals that have been genotyped in the last "nYrsAsCandidates"
   if(bsp$stageToGenotype=="F1"){
-    NrecentProgenySelCands<-(bsp$nProgeny*bsp$nCrosses)*bsp$nYrsAsCandidates
-    candidates<-records$F1@id %>% tail(.,n = NrecentProgenySelCands)
+    NrecentProgenySelCands <- (bsp$nProgeny * bsp$nCrosses)
+    candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands)
+    if (bsp$nYrsAsCandidates > 1) {
+      for(i in bsp$stageNames[1:(bsp$nYrsAsCandidates-1)]) {
+        candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>% .[[1]] %$% unique(id) %>% setdiff(., bsp$checks@id)))
+      }
+    }
+    candidates <- unique(candidates)
   } else {
-    candidates<-records[[bsp$stageToGenotype]] %>%
-      tail(.,n=bsp$nYrsAsCandidates) %>%
-      map_df(.,rbind) %$%
-      unique(id) %>%
+    candidates <- records[[bsp$stageToGenotype]] %>%
+      # select the "id" clones from the stage that the clones are genotyped
+      tail(., n =1) %>% .[[1]] %$% unique(id) %>%
       # exclude checks
-      setdiff(.,bsp$checks@id)
+      setdiff(., bsp$checks@id)
+    # get the progenitor candidates of the advanced trials
+    if (bsp$nYrsAsCandidates > 1) {
+      for(i in bsp$stageNames[((match(bsp$stageToGenotype,
+                                      bsp$stageNames) + 1) :
+                               bsp$nStages)[1:(bsp$nYrsAsCandidates-1)]]) {
+        candidates <- c(candidates, (records[[i]] %>%
+                                       # Selecting the last year of the stage "i"
+                                       tail(., n = 1) %>%
+                                       .[[1]] %$%
+                                       # remove the duplicated "id" names
+                                       unique(id) %>%
+                                       # exclude checks
+                                       setdiff(., bsp$checks@id)))
+      }
+    }
+# Last change
+#    candidates<-records[[bsp$stageToGenotype]] %>%
+#      tail(.,n=bsp$nYrsAsCandidates) %>%
+#      map_df(.,rbind) %$%
+#      unique(id) %>%
+#      # exclude checks
+#      setdiff(.,bsp$checks@id)
   }
 
   # How many additional individuals to use as training?
@@ -52,26 +79,29 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## but not in the list of selection candidates
   ## Drawn from the most recent cycles according to "nTrainPopCycles"
   ## Potentially subsampled according to "maxTrainingPopSize"
-  phenotypedLines<-trainRec[bsp$stageNames] %>%
+  ## RmStagePhen from the bsp object allows to remove trials with no accurate information from the phenotyped lines
+  phenotypedLines<-trainRec[bsp$stageNames[!bsp$stageNames%in%bsp$RmStagePhen]] %>%
     map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
     map_df(.,rbind) %$%
     unique(id)
 
-  phenotypedLines_notSelCands<-setdiff(phenotypedLines,candidates)
+  phenotypedLines_notSelCands<-setdiff(phenotypedLines, c(candidates, bsp$checks@id)) %>% .[order(as.integer(.))]
   ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
   maxTPsize<-min(bsp$maxTrainingPopSize,length(phenotypedLines_notSelCands))
   ## Make sure checks ARE included
-  if(!is.null(bsp$checks)){
-    # sample from the list of non-selection candidates that also are NOT checks
-    trainingpop<-sample(setdiff(phenotypedLines_notSelCands,bsp$checks@id),
-                        size = maxTPsize, replace = F) %>%
-      # include the checks
-      c(.,bsp$checks@id) %>%
-      # vanity: order the ids
-      .[order(as.integer(.))]
+
+  # sample from the list of non-selection candidates that also are NOT checks
+  if(!is.null(bsp$TrainingPopSel)){
+    trainingpop<-bsp$TrainingPopSel(phenotypedLines_notSelCands)
   } else {
     trainingpop<-sample(phenotypedLines_notSelCands,
                         size = maxTPsize, replace = F) %>%
+      .[order(as.integer(.))]
+  }
+      # include the checks if you have
+  if(!is.null(bsp$checks)){
+    trainingpop<-c(trainingpop,bsp$checks@id) %>%
+      # vanity: order the ids
       .[order(as.integer(.))]
   }
 
@@ -136,7 +166,7 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   grm <- make_grm(records, indivs2keep, bsp, SP, grmType="add")
   phenoDF <- framePhenoRec(records, bsp)
   # Remove individuals with phenotypes but who do not have geno records
-  phenoDF <- phenoDF[phenoDF$id %in% rownames(grm),]
+  phenoDF <- phenoDF[(phenoDF$id %in% rownames(grm) & !phenoDF$stage %in% bsp$RmStagePhen),]
   crit <- grmPhenoEval(phenoDF, grm)
   # exclude the checks from consideration as candidates
   crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]
@@ -192,7 +222,7 @@ make_grm <- function(records, indivs2keep, bsp, SP, grmType="add"){
 #' @details Given all the phenotypic records calculate the GEBV for each individual using all its records
 #'
 #' @examples
-
+#'
 #' @export
 gebvPhenoEval <- function(phenoDF, grm){
     require(sommer)
@@ -241,7 +271,7 @@ parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
   indivs2keep<-union(candidates,trainingpop)
   phenoDF <- framePhenoRec(records, bsp)
   # Remove individuals not designated as candidates or trainingpop
-  phenoDF <- phenoDF %>% filter(id %in% indivs2keep)
+  phenoDF <- phenoDF %>% filter(id %in% indivs2keep, !stage %in% bsp$RmStagePhen)
   crit <- iidPhenoEval(phenoDF)
   # exclude the checks from consideration as candidates
   crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]

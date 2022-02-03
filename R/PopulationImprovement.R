@@ -207,3 +207,33 @@ optContrib <- function(records, bsp, SP, crit){
   progeny <- makeCross(records[[1]], crossPlan, simParam=SP)
   return(progeny)
 }
+
+
+#' trainPopSelNew function
+#'
+#' function select the last individuals created by the simulation to compose the training population of the genomic prediction
+#' @param phenotypedLines_notSelCands List of individuals available to compose the training population
+#' of a genomic prediction, excluding the candidates for parent selection of the next cycle
+#' @param maxTPSize Number of individuals to select to compose the training population of the genomic prediction
+#' @return Return a list of individuals that will be the training population of the genomic prediction
+#' @export
+trainPopSelNew <- function(phenotypedLines_notSelCands, maxTPsize) {
+  trainPop <- tail(phenotypedLines_notSelCands, n = maxTPsize)
+  return(trainPop)
+}
+
+#' trainPopSelHRep function
+#'
+#' function select the individuals with higher number of repetitions to compose the training population of the genomic prediction
+#' @param phenotypedLines_notSelCands List of individuals available to compose the training population
+#' of a genomic prediction, excluding the candidates for parent selection of the next cycle
+#' @param maxTPSize Number of individuals to select to compose the training population of the genomic prediction
+#' @return Return a list of individuals that will be the training population of the genomic prediction
+#' @export
+trainPopSelHRep <- function(phenotypedLines_notSelCands, maxTPsize) {
+  trainPop <- framePhenoRec(records, bsp) %>% filter(!stage %in% bsp$RmStagePhen,
+                                                     id != bsp$checks@id) %$%
+    table(id) %>% .[order(.)] %>% names %>% .[. %in% phenotypedLines_notSelCands] %>%
+    tail(., n = maxTPsize)
+  return(trainPop)
+}

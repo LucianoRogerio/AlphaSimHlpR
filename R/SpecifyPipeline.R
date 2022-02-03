@@ -268,6 +268,9 @@ calculateChkReps <- function(bsp){
 #' named stages (SDN, CET, and PYT in this control file), the user can
 #' specify F1, which will cause all nCrosses * nProgeny individuals to be
 #' genotyped. If nothing is specified, the default will be to genotype all F1.
+#' @param RmStagePhen remove any phenotype data from an specific stage.
+#' You could remove the trials with highest error variance, or that their observations
+#' is commonly omitted from the breeders decisions.
 #' @param usePolycrossNursery T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating
 #' @param nSeeds Parameter to determine the number of seeds only if usePolycrossNursery TRUE
 #' @param nClonesToNCRP Number of clones that will be sent to NCRP for potential variety release
@@ -287,6 +290,7 @@ specifyBSP <- function(schemeDF,
                        gxeVar=NULL,gxyVar=NULL,gxlVar=NULL,gxyxlVar=NULL,
                        meanDD=0,varDD=0,relAA=0,
                        stageToGenotype,
+                       RmStagePhen=NULL,
                        nParents,nCrosses,nProgeny,
                        usePolycrossNursery=FALSE,nSeeds=NULL,
                        useOptContrib=FALSE,nCandOptCont=NULL,targetEffPopSize=NULL,
@@ -296,6 +300,7 @@ specifyBSP <- function(schemeDF,
                        nCyclesToKeepRecords,
                        selCritPipeAdv="selCritIID",
                        selCritPopImprov="selCritIID",
+                       TrainingPopSel=NULL,
                        nTrainPopCycles,
                        nYrsAsCandidates,
                        maxTrainingPopSize,
@@ -326,7 +331,7 @@ specifyBSP <- function(schemeDF,
     purrr::map(.,~get(.))
 
   # pipeline parms
-  pipe_parms <- c("stageToGenotype",
+  pipe_parms <- c("stageToGenotype", "RmStagePhen",
                   "nParents", "nCrosses", "nProgeny",
                   "usePolycrossNursery", "nSeeds",
                   "useOptContrib", "nCandOptCont", "targetEffPopSize",
@@ -334,6 +339,7 @@ specifyBSP <- function(schemeDF,
                   "phenoF1toStage1", "errVarPreStage1", "useCurrentPhenoTrain",
                   "nCyclesToKeepRecords",
                   "selCritPipeAdv", "selCritPopImprov",
+                  "TrainingPopSel",
                   "nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize",
                   "modelType","propSel","crossSelCrit","nCrossPredCores")
   pipe_parms %<>%

@@ -176,6 +176,7 @@ iidPhenoEval <- function(phenoDF){
 #' @param grm A genomic relationship matrix
 #' @return Named real vector of the BLUPs of all individuals in phenoDF (names are the individual ids), with appropriate weights by error variance of the observation
 #' @details Given all the phenotypic records calculate the GEBV for each individual using all its records
+#' The genomic prediction could be performed by sommer package or asreml.
 #'
 #' @examples
 #' phenoDF <- framePhenoRec(records, bsp)
