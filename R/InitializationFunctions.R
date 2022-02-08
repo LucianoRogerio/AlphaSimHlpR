@@ -47,13 +47,13 @@ initFuncADChk <- function(bsp){
 #' records <- initList$records
 #'
 #' @export
-initializeScheme <- function(bsp,nBLASthreads = NULL){
+initializeScheme <- function(bsp,nThreadsForMacs = NULL){
   # Create haplotypes for founder population of outbred individuals
   nF1 <- bsp$nCrosses * bsp$nProgeny + max(bsp$nChks)
   if (bsp$quickHaplo){
     founderHap <- quickHaplo(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites)
   } else{
-    founderHap <- runMacs2(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites, Ne=bsp$effPopSize,nThreads = nBLASthreads)
+    founderHap <- runMacs2(nInd=nF1, nChr=bsp$nChr, segSites=bsp$segSites, Ne=bsp$effPopSize,nThreads = nThreadsForMacs)
   }
 
   # New global simulation parameters from founder haplotypes
