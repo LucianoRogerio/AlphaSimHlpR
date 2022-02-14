@@ -133,10 +133,22 @@ popImprovByParentSel <- function(records, bsp, SP){
   #   stage <- as.integer(rownames(stgCyc)[i])
   #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
   # }
+  GS <- tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
+               cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
+               first = first(candidates),
+               last = last(candidates),
+               grmSize = length(union(candidates, trainingpop)),
+               grmId = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
+                              bind_rows(tibble(id = trainingpop)) %>% mutate(pop = "t")),
+               Ne = grmSize*(1/(1 + mean(diag(make_grm(records, union(candidates, trainingpop),
+                                                       bsp, SP, grmType="add"))) - 1)),
+               accAtSel=cor(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)]), crit),
+               genoValMean = mean(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)])),
+               genValSD = sd(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)])))
   records$F1 <- c(records$F1, progeny)
+  records[["GS"]] <- rbind(records[["GS"]], GS)
   return(records)
 }
-
 
 #' Generate GEBV as genomic parent selection criteria
 #'

@@ -133,7 +133,7 @@ productSelCritBLUP <- function(records, candidates, bsp, SP){
 #'
 #' @export
 dataframePhenoRec <- function(records, bsp){
-  stages2frame<-names(records)[!names(records) %in% c("F1","stageOutputs")]
+  stages2frame<-names(records)[!names(records) %in% c("F1","stageOutputs","GS")]
   # Verify if there is new stages, if TRUE this will separate the stages in new and common
   if(!is.null(bsp$burnInBSP)){ stages_during_burn_in<-bsp$burnInBSP$stageNames } else {
     stages_during_burn_in<-bsp$stageNames }
