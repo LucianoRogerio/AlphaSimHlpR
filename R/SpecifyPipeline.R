@@ -335,7 +335,7 @@ specifyBSP <- function(schemeDF,
 
   # pipeline parms
   pipe_parms <- c("stageToGenotype", "RmStagePhen",
-                  "nParents", "nCrosses", "nProgeny", "parentsFlowering"
+                  "nParents", "nCrosses", "nProgeny", "parentsFlowering",
                   "usePolycrossNursery", "nSeeds",
                   "useOptContrib", "nCandOptCont", "targetEffPopSize",
                   "nClonesToNCRP",
