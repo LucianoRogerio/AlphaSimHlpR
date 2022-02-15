@@ -119,7 +119,7 @@ popImprovByParentSel <- function(records, bsp, SP){
   } else {
     # select the top nParents based
     selectedParentIDs<-names(crit[order(crit, decreasing=T)][1:bsp$nParents]) %>%
-      sample(x = ., size = (bsp$nParents*bsp$parentsFlowering/100), replace = FALSE) %>%
+      sample(x = ., size = round(bsp$nParents*bsp$parentsFlowering/100, digits = 0), replace = FALSE) %>%
       .[order(as.integer(.))]
     # extract a pop-object of those parents
     parents <- records$F1[selectedParentIDs]
