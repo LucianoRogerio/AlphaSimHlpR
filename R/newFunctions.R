@@ -111,13 +111,16 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## available pheno records (in "trainRec") for any of the "candidates"
   ## will be automatically included in predictions
   crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
+  nParSam <- ifelse(bsp$NParentsFlw)
 
   # Not sure if useOptContrib will work "as is"
   if (bsp$useOptContrib){
     progeny <- optContrib(records, bsp, SP, crit)
   } else {
     # select the top nParents based
-    selectedParentIDs<-names(crit[order(crit, decreasing=T)][1:bsp$nParents])
+    selectedParentIDs<-names(crit[order(crit, decreasing=T)][1:bsp$nParents]) %>%
+      sample(x = ., size = (bsp$nParents*bsp$parentsFlowering/100), replace = FALSE) %>%
+      .[order(as.integer(.))]
     # extract a pop-object of those parents
     parents <- records$F1[selectedParentIDs]
     # make crosses
