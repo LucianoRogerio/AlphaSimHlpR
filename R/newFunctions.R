@@ -111,7 +111,6 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## available pheno records (in "trainRec") for any of the "candidates"
   ## will be automatically included in predictions
   crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
-  nParSam <- ifelse(bsp$NParentsFlw)
 
   # Not sure if useOptContrib will work "as is"
   if (bsp$useOptContrib){
@@ -143,11 +142,13 @@ popImprovByParentSel <- function(records, bsp, SP){
                grmSize = length(union(candidates, trainingpop)),
                grmId = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
                               bind_rows(tibble(id = trainingpop)) %>% mutate(pop = "t")),
-               Ne = grmSize*(1/(1 + mean(diag(make_grm(records, union(candidates, trainingpop),
+               NeCan = length(candidates)*(1/(1 + mean(diag(make_grm(records, candidates,
                                                        bsp, SP, grmType="add"))) - 1)),
-               accAtSel=cor(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)]), crit),
-               genoValMean = mean(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)])),
-               genValSD = sd(gv(records$F1[setdiff(union(candidates, trainingpop), bsp$checks@id)])))
+               NeTP = length(trainingpop)*(1/(1 + mean(diag(make_grm(records, trainingpop,
+                                                         bsp, SP, grmType="add"))) - 1)),
+               accAtSel=cor(gv(records$F1[candidates]), crit[names(crit) %in% candidates], use = "complete.obs"),
+               genoValMean = mean(gv(records$F1[candidates])),
+               genValSD = sd(gv(records$F1[candidates])))
   records$F1 <- c(records$F1, progeny)
   records[["GS"]] <- rbind(records[["GS"]], GS)
   return(records)
