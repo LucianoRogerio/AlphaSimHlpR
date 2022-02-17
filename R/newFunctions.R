@@ -135,22 +135,27 @@ popImprovByParentSel <- function(records, bsp, SP){
   #   stage <- as.integer(rownames(stgCyc)[i])
   #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
   # }
-  GS <- tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
-               cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
-               first = first(candidates),
-               last = last(candidates),
-               grmSize = length(union(candidates, trainingpop)),
-               grmId = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
-                              bind_rows(tibble(id = trainingpop)) %>% mutate(pop = "t")),
-               NeCan = length(candidates)*(1/(1 + mean(diag(make_grm(records, candidates,
-                                                       bsp, SP, grmType="add"))) - 1)),
-               NeTP = length(trainingpop)*(1/(1 + mean(diag(make_grm(records, trainingpop,
-                                                         bsp, SP, grmType="add"))) - 1)),
-               accAtSel=cor(gv(records$F1[candidates]), crit[names(crit) %in% candidates], use = "complete.obs"),
-               genoValMean = mean(gv(records$F1[candidates])),
-               genValSD = sd(gv(records$F1[candidates])))
+  PopImprov <- tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
+                      cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
+                      first = first(candidates),
+                      last = last(candidates),
+                      grmSize = length(union(candidates, trainingpop)),
+                      grmId = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
+                                     bind_rows(tibble(id = trainingpop)) %>% mutate(pop = "t")),
+                      NeCan = length(candidates)*(1/(1 + mean(diag(make_grm(records, candidates,
+                                                                            bsp, SP, grmType="add"))) - 1)),
+                      NeTP = length(trainingpop)*(1/(1 + mean(diag(make_grm(records, trainingpop,
+                                                                            bsp, SP, grmType="add"))) - 1)),
+                      CanData = list(left_join(data.frame(id = records$F1[candidates]@id,
+                                                          gv = records$F1[candidates]@gv),
+                                               data.frame(id = names(crit),
+                                                          gebv = crit), by = "id") %>%
+                                       .[order(as.numeric(.$id)),]),
+                      accAtSel=cor(x = CanData[[1]]$gv, y = CanData[[1]]$gebv, use = "complete.obs"),
+                      genoValMean = mean(CanData[[1]]$gv, na.rm = TRUE),
+                      genValSD = sd(CanData[[1]]$gv, na.rm = TRUE))
   records$F1 <- c(records$F1, progeny)
-  records[["GS"]] <- rbind(records[["GS"]], GS)
+  records[["PopImprov"]] <- rbind(records[["PopImprov"]], PopImprov)
   return(records)
 }
 

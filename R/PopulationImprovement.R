@@ -158,7 +158,7 @@ optContrib <- function(records, bsp, SP, crit){
     ub.grm = max(1-(1-cand$mean$grm)*(1-1/(2*Ne)), 0)
   )
   oc <- opticont("max.crit", cand, con, quiet=T, trace=F)$parent[, c("Indiv", "oc")]
-  keep <- oc$oc > 1 / bsp$nSeeds / 4
+  keep <- oc$oc > (1 / bsp$nSeeds / 4)
   oc <- oc[keep,]
   grm <- grm[keep, keep]
   oc$nOffspr <- oc$oc * 2 * bsp$nSeeds
