@@ -140,20 +140,24 @@ popImprovByParentSel <- function(records, bsp, SP){
                       first = first(candidates),
                       last = last(candidates),
                       grmSize = length(union(candidates, trainingpop)),
-                      grmId = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
-                                     bind_rows(tibble(id = trainingpop)) %>% mutate(pop = "t")),
-                      NeCan = length(candidates)*(1/(1 + mean(diag(make_grm(records, candidates,
-                                                                            bsp, SP, grmType="add"))) - 1)),
-                      NeTP = length(trainingpop)*(1/(1 + mean(diag(make_grm(records, trainingpop,
-                                                                            bsp, SP, grmType="add"))) - 1)),
-                      CanData = list(left_join(data.frame(id = records$F1[candidates]@id,
-                                                          gv = records$F1[candidates]@gv),
-                                               data.frame(id = names(crit),
-                                                          gebv = crit), by = "id") %>%
+                      grmData = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
+                                     bind_rows(tibble(id = trainingpop) %>% mutate(pop = "t")) %>%
+                                       left_join(data.frame(id = records$F1[candidates]@id,
+                                                            gv = records$F1[candidates]@gv), by = "id") %>%
+                                                   left_join(data.frame(id = names(crit),
+                                                                        gebv = crit), by = "id") %>%
                                        .[order(as.numeric(.$id)),]),
-                      accAtSel=cor(x = CanData[[1]]$gv, y = CanData[[1]]$gebv, use = "complete.obs"),
-                      genoValMean = mean(CanData[[1]]$gv, na.rm = TRUE),
-                      genValSD = sd(CanData[[1]]$gv, na.rm = TRUE))
+                      NeCan = length(candidates)*(1/(mean(diag(make_grm(records, candidates,
+                                                                            bsp, SP, grmType="add"))))),
+                      NeTP = length(setdiff(trainingpop,
+                                            bsp$checks@id))*(1/(mean(diag(make_grm(records,
+                                                                                   setdiff(trainingpop, bsp$checks@id),
+                                                                            bsp, SP, grmType="add"))))),
+                      accAtSel=cor(x = grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]],
+                                   y = grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]],
+                                   use = "complete.obs"),
+                      genoValMean = mean(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE),
+                      genValSD = sd(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE))
   records$F1 <- c(records$F1, progeny)
   records[["PopImprov"]] <- rbind(records[["PopImprov"]], PopImprov)
   return(records)
