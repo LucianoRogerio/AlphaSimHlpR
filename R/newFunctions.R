@@ -65,13 +65,6 @@ popImprovByParentSel <- function(records, bsp, SP){
                                        setdiff(., bsp$checks@id)))
       }
     }
-# Last change
-#    candidates<-records[[bsp$stageToGenotype]] %>%
-#      tail(.,n=bsp$nYrsAsCandidates) %>%
-#      map_df(.,rbind) %$%
-#      unique(id) %>%
-#      # exclude checks
-#      setdiff(.,bsp$checks@id)
   }
 
   # How many additional individuals to use as training?
@@ -143,7 +136,8 @@ popImprovByParentSel <- function(records, bsp, SP){
                       grmData = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
                                      bind_rows(tibble(id = trainingpop) %>% mutate(pop = "t")) %>%
                                        left_join(data.frame(id = records$F1[candidates]@id,
-                                                            gv = records$F1[candidates]@gv), by = "id") %>%
+                                                            bv = bv(records$F1[candidates]),
+                                                            gv = gv(records$F1[candidates])), by = "id") %>%
                                                    left_join(data.frame(id = names(crit),
                                                                         gebv = crit), by = "id") %>%
                                        .[order(as.numeric(.$id)),]),
@@ -153,9 +147,11 @@ popImprovByParentSel <- function(records, bsp, SP){
                                             bsp$checks@id))*(1/(mean(diag(make_grm(records,
                                                                                    setdiff(trainingpop, bsp$checks@id),
                                                                             bsp, SP, grmType="add"))))),
-                      accAtSel=cor(x = grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]],
-                                   y = grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]],
-                                   use = "complete.obs"),
+                      accAtSel=ifelse(all(is.na(grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]])),
+                                      yes = NA,
+                                      no = cor(x = grmData[[1]][(grmData[[1]]$pop == "c"), "bv"][[1]],
+                                               y = grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]],
+                                               use = "complete.obs")),
                       genoValMean = mean(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE),
                       genValSD = sd(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE))
   records$F1 <- c(records$F1, progeny)
