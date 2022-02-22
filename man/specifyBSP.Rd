@@ -21,9 +21,11 @@ specifyBSP(
   varDD = 0,
   relAA = 0,
   stageToGenotype,
+  RmStagePhen = NULL,
   nParents,
   nCrosses,
   nProgeny,
+  parentsFlowering = 100,
   usePolycrossNursery = FALSE,
   nSeeds = NULL,
   useOptContrib = FALSE,
@@ -36,6 +38,7 @@ specifyBSP(
   nCyclesToKeepRecords,
   selCritPipeAdv = "selCritIID",
   selCritPopImprov = "selCritIID",
+  TrainingPopSel = NULL,
   nTrainPopCycles,
   nYrsAsCandidates,
   maxTrainingPopSize,
@@ -94,11 +97,18 @@ named stages (SDN, CET, and PYT in this control file), the user can
 specify F1, which will cause all nCrosses * nProgeny individuals to be
 genotyped. If nothing is specified, the default will be to genotype all F1.}
 
+\item{RmStagePhen}{T/F remove any phenotype data from an specific stage.
+You could remove the trials with highest error variance, or that their observations
+is commonly omitted from the breeders decisions.}
+
 \item{nParents}{integer number of parents to cross}
 
 \item{nCrosses}{integer how many crosses to make}
 
 \item{nProgeny}{integer how many progeny per cross}
+
+\item{parentsFlowering}{numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection
+default 100%}
 
 \item{usePolycrossNursery}{T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating}
 

@@ -19,6 +19,7 @@ function to take a data.frame coming from framePhenoRec and GRM and analyze them
 }
 \details{
 Given all the phenotypic records calculate the GEBV for each individual using all its records
+The genomic prediction could be performed by sommer package or asreml.
 }
 \examples{
 phenoDF <- framePhenoRec(records, bsp)

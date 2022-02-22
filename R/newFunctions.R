@@ -49,12 +49,11 @@ popImprovByParentSel <- function(records, bsp, SP){
       # select the "id" clones from the stage that the clones are genotyped
       tail(., n =1) %>% .[[1]] %$% unique(id) %>%
       # exclude checks
-      setdiff(., bsp$checks@id)
+      setdiff(., bsp$checks@id) %>% .[order(as.integer(.))]
+  }
     # get the progenitor candidates of the advanced trials
     if (bsp$nYrsAsCandidates > 1) {
-      for(i in bsp$stageNames[((match(bsp$stageToGenotype,
-                                      bsp$stageNames) + 1) :
-                               bsp$nStages)[1:(bsp$nYrsAsCandidates-1)]]) {
+      for(i in c("F1", bsp$stageNames)[((match(bsp$stageToGenotype, c("F1", bsp$stageNames)) + 1):bsp$nStages)[1:(bsp$nYrsAsCandidates-1)]]) {
         candidates <- c(candidates, (records[[i]] %>%
                                        # Selecting the last year of the stage "i"
                                        tail(., n = 1) %>%
@@ -62,11 +61,9 @@ popImprovByParentSel <- function(records, bsp, SP){
                                        # remove the duplicated "id" names
                                        unique(id) %>%
                                        # exclude checks
-                                       setdiff(., bsp$checks@id)))
-      }
+                                       setdiff(., bsp$checks@id))) %>% .[order(as.integer(.))]
     }
   }
-
   # How many additional individuals to use as training?
   ## these are individuals with phenotypes
   ## but not in the list of selection candidates
@@ -75,8 +72,8 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## RmStagePhen from the bsp object allows to remove trials with no accurate information from the phenotyped lines
   phenotypedLines<-trainRec[bsp$stageNames[!bsp$stageNames%in%bsp$RmStagePhen]] %>%
     map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
-    map_df(.,rbind) %$%
-    unique(id)
+    bind_rows() %$%
+    unique(id) %>% .[order(as.integer(.))]
 
   phenotypedLines_notSelCands<-setdiff(phenotypedLines, c(candidates, bsp$checks@id)) %>% .[order(as.integer(.))]
   ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
@@ -128,33 +125,9 @@ popImprovByParentSel <- function(records, bsp, SP){
   #   stage <- as.integer(rownames(stgCyc)[i])
   #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
   # }
-  PopImprov <- tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
-                      cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
-                      first = first(candidates),
-                      last = last(candidates),
-                      grmSize = length(union(candidates, trainingpop)),
-                      grmData = list(tibble(id = candidates) %>% mutate(pop = "c") %>%
-                                     bind_rows(tibble(id = trainingpop) %>% mutate(pop = "t")) %>%
-                                       left_join(data.frame(id = records$F1[candidates]@id,
-                                                            bv = bv(records$F1[candidates]),
-                                                            gv = gv(records$F1[candidates])), by = "id") %>%
-                                                   left_join(data.frame(id = names(crit),
-                                                                        gebv = crit), by = "id") %>%
-                                       .[order(as.numeric(.$id)),]),
-                      NeCan = length(candidates)*(1/(mean(diag(make_grm(records, candidates,
-                                                                            bsp, SP, grmType="add"))))),
-                      NeTP = length(setdiff(trainingpop,
-                                            bsp$checks@id))*(1/(mean(diag(make_grm(records,
-                                                                                   setdiff(trainingpop, bsp$checks@id),
-                                                                            bsp, SP, grmType="add"))))),
-                      accAtSel=ifelse(all(is.na(grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]])),
-                                      yes = NA,
-                                      no = cor(x = grmData[[1]][(grmData[[1]]$pop == "c"), "bv"][[1]],
-                                               y = grmData[[1]][(grmData[[1]]$pop == "c"), "gebv"][[1]],
-                                               use = "complete.obs")),
-                      genoValMean = mean(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE),
-                      genValSD = sd(grmData[[1]][(grmData[[1]]$pop == "c"), "gv"][[1]], na.rm = TRUE))
-  records$F1 <- c(records$F1, progeny)
+    PopImprov <- popImprovOutput(records, crit, candidates, trainingpop, SP)
+
+    records$F1 <- c(records$F1, progeny)
   records[["PopImprov"]] <- rbind(records[["PopImprov"]], PopImprov)
   return(records)
 }

@@ -237,3 +237,49 @@ trainPopSelHRep <- function(phenotypedLines_notSelCands, maxTPsize) {
     tail(., n = maxTPsize)
   return(trainPop)
 }
+
+#' popImprovOutput function
+#'
+#' To create a row for a tibble for each cycle of population improvement. The tibble will be kept as the last object of the records list
+#' @param records The breeding program \code{records} object. See \code{fillPipeline} for details
+#' @param crit Named vector of selection criterion to be maximized
+#' @param candidates Character vector of ids of the candidates to be parents
+#' @param trainingpop Character vector of ids of the training population selected to predict the candidates
+#' @param SP The AlphaSimR SimParam object
+#' @return A tibble with whatever information from the parent selection to improve the breeding population you want to store for analysis after simulation is done
+#' @export
+popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
+  InfoParentSel <- tibble(id = names(crit),
+                          gebv = crit) %>%
+    mutate(pop = ifelse(test = names(crit) %in% candidates,
+                        yes = "c",
+                        no = "t")) %>%
+    arrange(as.integer(id))
+  InfoF1 <- tibble(id = records$F1@id,
+                       bv = bv(records$F1, simParam = SP),
+                       gv = gv(records$F1))
+
+  GData <- InfoParentSel %>% left_join(InfoF1, by = "id")
+
+  genValMean <- mean(GData[GData$pop == "c",]$gv, na.rm = TRUE)
+
+  genValSD <- sd(GData[GData$pop == "c",]$gv, na.rm = TRUE)
+
+  if(all(is.na(GData[GData$pop == "c", "gebv"]))) {
+    accAtSel <- NA
+} else {
+  accAtSel <- cor(x = GData[GData$pop == "c",]$bv,
+                  y = GData[GData$pop == "c",]$gebv,
+                  use = "complete.obs")
+  }
+
+return(tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
+              cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
+              first = first(candidates),
+              last = last(candidates),
+              grmSize = length(union(candidates,trainingpop)),
+              grmData = list(GData),
+              accAtSel = accAtSel,
+              genValMean = genValMean,
+              genValSD = genValSD))
+}
