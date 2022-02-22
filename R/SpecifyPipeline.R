@@ -232,14 +232,9 @@ calculateChkReps <- function(bsp){
 #'  \item \code{nEntries}: Vector of number of number of entries in each stage
 #'  \item \code{entryToChkRatio}: How many entry plots do you have per check plot
 #'  \item \code{errVars}: Vector of error variances estimated from historical data
-#'  \item \code{trainingPopCycles}: How many cycles back to keep records from
-#'  each stage in the training population. More cycles means bigger training
-#'  population but also more distant from the selection candidates.
-#'  Fewer cycles means the simulation runs faster
-#' }
+#'  \item \code{trainingPopCycles}: How many cycles back to keep records from each stage in the training population. More cycles means bigger training  population but also more distant from the selection candidates. Fewer cycles means the simulation runs faster
 #' @param nParents integer number of parents to cross
-#' @param parentsFlowering numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection
-#' default 100%
+#' @param parentsFlowering numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection default 100%
 #' @param nCrosses integer how many crosses to make
 #' @param nProgeny integer how many progeny per cross
 #' @param useOptContrib logical whether to use optimal contributions
@@ -266,13 +261,8 @@ calculateChkReps <- function(bsp){
 #' @param gxyVar genotype-by-year variance
 #' @param gxlVar genotype-by-location variance
 #' @param gxyxlVar genotype-by-location-by-year variance
-#' @param stageToGenotype At what stage do you want to genotype individuals?  In addition to the
-#' named stages (SDN, CET, and PYT in this control file), the user can
-#' specify F1, which will cause all nCrosses * nProgeny individuals to be
-#' genotyped. If nothing is specified, the default will be to genotype all F1.
-#' @param RmStagePhen T/F remove any phenotype data from an specific stage.
-#' You could remove the trials with highest error variance, or that their observations
-#' is commonly omitted from the breeders decisions.
+#' @param stageToGenotype At what stage do you want to genotype individuals?  In addition to the named stages (SDN, CET, and PYT in this control file), the user can specify F1, which will cause all nCrosses * nProgeny individuals to be genotyped. If nothing is specified, the default will be to genotype all F1.
+#' @param RmStagePhen T/F remove any phenotype data from an specific stage. You could remove the trials with highest error variance, or that their observations is commonly omitted from the breeders decisions.
 #' @param usePolycrossNursery T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating
 #' @param nSeeds Parameter to determine the number of seeds only if usePolycrossNursery TRUE
 #' @param nClonesToNCRP Number of clones that will be sent to NCRP for potential variety release

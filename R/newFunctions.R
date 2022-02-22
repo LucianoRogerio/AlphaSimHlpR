@@ -32,7 +32,6 @@ popImprovByParentSel <- function(records, bsp, SP){
       trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
     }
   }
-
   # Which individuals can be selection candidates?
   ## only individuals that have been genotyped in the last "nYrsAsCandidates"
   if(bsp$stageToGenotype=="F1"){
@@ -40,14 +39,14 @@ popImprovByParentSel <- function(records, bsp, SP){
     candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands)
     if (bsp$nYrsAsCandidates > 1) {
       for(i in bsp$stageNames[1:(bsp$nYrsAsCandidates-1)]) {
-        candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>% .[[1]] %$% unique(id) %>% setdiff(., bsp$checks@id)))
+        candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>% map_df(., rbind) %$% unique(id) %>% setdiff(., bsp$checks@id)))
       }
     }
     candidates <- unique(candidates)
   } else {
     candidates <- records[[bsp$stageToGenotype]] %>%
       # select the "id" clones from the stage that the clones are genotyped
-      tail(., n =1) %>% .[[1]] %$% unique(id) %>%
+      tail(., n =1) %>% map_df(., rbind) %$% unique(id) %>%
       # exclude checks
       setdiff(., bsp$checks@id) %>% .[order(as.integer(.))]
   }
@@ -57,7 +56,7 @@ popImprovByParentSel <- function(records, bsp, SP){
         candidates <- c(candidates, (records[[i]] %>%
                                        # Selecting the last year of the stage "i"
                                        tail(., n = 1) %>%
-                                       .[[1]] %$%
+                                       map_df(., rbind) %$%
                                        # remove the duplicated "id" names
                                        unique(id) %>%
                                        # exclude checks
@@ -73,7 +72,7 @@ popImprovByParentSel <- function(records, bsp, SP){
   phenotypedLines<-trainRec[bsp$stageNames[!bsp$stageNames%in%bsp$RmStagePhen]] %>%
     map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
     bind_rows() %$%
-    unique(id) %>% .[order(as.integer(.))]
+    unique(id) %>% .[order(as.integer(.))] %>% suppressWarnings
 
   phenotypedLines_notSelCands<-setdiff(phenotypedLines, c(candidates, bsp$checks@id)) %>% .[order(as.integer(.))]
   ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
@@ -188,7 +187,7 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
 #' @param indivs2keep chr. vector of id's to be included in the grm. Must be present in \code{c(records$F1,bsp$checks)}.
 #' @param bsp The breeding scheme parameter list
 #' @param SP The AlphaSimR SimParam object. Needed to pull the SNP genotypes
-#' @param grmType
+#' @param grmType Inform the function which type of genomic relationship matrix it should be created. It could be additive ("add"), and dominant ("dom")
 #' @return A genomic relationship matrix
 #' @details \code{records} maintains the phenotypic and genotypic records across
 #'   years and stages. For GEBV analysis, you need the GRM of these individuals.

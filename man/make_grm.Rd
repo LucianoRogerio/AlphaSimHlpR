@@ -15,6 +15,8 @@ make_grm(records, indivs2keep, bsp, SP, grmType = "add")
 \item{bsp}{The breeding scheme parameter list}
 
 \item{SP}{The AlphaSimR SimParam object. Needed to pull the SNP genotypes}
+
+\item{grmType}{Inform the function which type of genomic relationship matrix it should be created. It could be additive ("add"), and dominant ("dom")}
 }
 \value{
 A genomic relationship matrix
