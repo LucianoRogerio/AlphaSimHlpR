@@ -37,12 +37,13 @@ print("Pass 1")
   id <- records$F1[newF1Idx]@id
   records$stageOutputs <- records$stageOutputs %>%
       dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
-print("Pass 2")
+
   # Will be added to the phenotype records
   toAdd <- list()
   for(stage in bsp$stageNames){
     # Make a summary for this stage
     id <- last(records[[stage]])$id %>% .[!. %in% bsp$checks@id]
+print("Pass 2")
     records$stageOutputs<-records$stageOutputs %>%
       dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
                                             stage=which(bsp$stageNames==stage),
