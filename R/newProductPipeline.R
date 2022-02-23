@@ -47,7 +47,6 @@ print("Pass 1")
       dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
                                             stage=which(bsp$stageNames==stage),
                                             year=year, bsp=bsp))
-print("Pass 3")
     if(which(bsp$stageNames==stage) == 1){
       # Stage 1 different: no phenotypes but full Pop-class
       # Use phenotypes to select the F1 going into Stage 1?
@@ -70,7 +69,7 @@ print("Pass 3")
       selCritToAdv <- selCrit[id]
       indToAdv<-selCritToAdv %>% sort(.,decreasing = T) %>% .[1:bsp$nEntries[stage]] %>% names
     }
-print("Pass 4")
+
     entries <- records$F1[indToAdv]
     varE <- bsp$gxyVar + (bsp$gxlVar + bsp$gxyxlVar + bsp$errVars[stage] / bsp$nReps[stage]) / bsp$nLocs[stage]
     # reps=1 because varE is computed above

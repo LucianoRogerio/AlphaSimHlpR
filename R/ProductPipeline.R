@@ -117,9 +117,7 @@ productPipeline <- function(records, bsp, SP){
 stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
   stageName <- c("F1", bsp$stageNames)[stage+1]
   f1 <- f1[id]
-
   selCrit <- selCrit[id]
-  print(selCrit)
   if (length(selCrit) == 0 | all(is.na(selCrit))){
     gvOfBestCrit <- NA
   } else{
@@ -127,7 +125,6 @@ stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
     bestCrit <- order(selCrit, decreasing=T)[1:nToNCRP]
     gvOfBestCrit <- mean(gv(f1[names(selCrit)[bestCrit]]))
   }
-  print("Pass 2a")
   highestGV <- max(gv(f1))
   return(tibble(cycle=year-stage, year=year, stage=stageName,
                 first=first(id), last=last(id),
