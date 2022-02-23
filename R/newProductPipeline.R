@@ -43,7 +43,6 @@ print("Pass 1")
   for(stage in bsp$stageNames){
     # Make a summary for this stage
     id <- last(records[[stage]])$id %>% .[!. %in% bsp$checks@id]
-print("Pass 2")
     records$stageOutputs<-records$stageOutputs %>%
       dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
                                             stage=which(bsp$stageNames==stage),

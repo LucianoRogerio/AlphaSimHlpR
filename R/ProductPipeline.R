@@ -117,7 +117,9 @@ productPipeline <- function(records, bsp, SP){
 stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
   stageName <- c("F1", bsp$stageNames)[stage+1]
   f1 <- f1[id]
+  print("Pass 2a")
   selCrit <- selCrit[id]
+  print("Pass 2b")
   if (length(selCrit) == 0 | all(is.na(selCrit))){
     gvOfBestCrit <- NA
   } else{
