@@ -38,7 +38,7 @@ specifyBSP(
   nCyclesToKeepRecords,
   selCritPipeAdv = "selCritIID",
   selCritPopImprov = "selCritIID",
-  TrainingPopSel = NULL,
+  TrainPopSel = NULL,
   nTrainPopCycles,
   nYrsAsCandidates,
   maxTrainingPopSize,
@@ -112,6 +112,8 @@ specifyBSP(
 \item{selCritPipeAdv}{function used to determine selection criterion for pipe}
 
 \item{selCritPopImprov}{function used to determine sel crit for pop improv}
+
+\item{TrainPopSel}{function used to determine the training population for pop improv}
 
 \item{nTrainPopCycles}{draw training pop lines only from this number of recent cycles.}
 

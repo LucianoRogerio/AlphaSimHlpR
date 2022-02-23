@@ -247,6 +247,7 @@ calculateChkReps <- function(bsp){
 #' @param nTrainPopCycles draw training pop lines only from this number of recent cycles.
 #' @param nYrsAsCandidates candidates for selection only from this number of recent years
 #' @param maxTrainingPopSize From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}), subsample this number of lines for training data.
+#' @param TrainPopSel function used to determine the training population for pop improv
 #' @param nChr integer number of chromosomes for the species
 #' @param effPopSize numeric historic effective population size for the species
 #' @param segSites integer number of sites segregating per chromosome
@@ -293,7 +294,7 @@ specifyBSP <- function(schemeDF,
                        nCyclesToKeepRecords,
                        selCritPipeAdv="selCritIID",
                        selCritPopImprov="selCritIID",
-                       TrainingPopSel=NULL,
+                       TrainPopSel=NULL,
                        nTrainPopCycles,
                        nYrsAsCandidates,
                        maxTrainingPopSize,
@@ -332,7 +333,7 @@ specifyBSP <- function(schemeDF,
                   "phenoF1toStage1", "errVarPreStage1", "useCurrentPhenoTrain",
                   "nCyclesToKeepRecords",
                   "selCritPipeAdv", "selCritPopImprov",
-                  "TrainingPopSel",
+                  "TrainPopSel",
                   "nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize",
                   "modelType","propSel","crossSelCrit","nCrossPredCores")
   pipe_parms %<>%

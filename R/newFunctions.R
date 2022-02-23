@@ -24,35 +24,28 @@
 #' @details This function uses penotypic records coming out of the product pipeline to choose individuals as parents to initiate the next breeding cycle
 #' @export
 popImprovByParentSel <- function(records, bsp, SP){
-  # Which phenotypes can be included for model training?
-  ### Current year phenotypes?
-  trainRec <- records
-  if (!bsp$useCurrentPhenoTrain){
-    for (stage in bsp$stageNames){
-      trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
-    }
-  }
+
   # Which individuals can be selection candidates?
   ## only individuals that have been genotyped in the last "nYrsAsCandidates"
-  if(bsp$stageToGenotype=="F1"){
+  if(bsp$stageToGenotype == "F1"){
     NrecentProgenySelCands <- (bsp$nProgeny * bsp$nCrosses)
-    candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands)
+    candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands) %>% unique
     if (bsp$nYrsAsCandidates > 1) {
-      for(i in bsp$stageNames[1:(bsp$nYrsAsCandidates-1)]) {
-        candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>% map_df(., rbind) %$% unique(id) %>% setdiff(., bsp$checks@id)))
+      for(i in bsp$stageNames[1 : (bsp$nYrsAsCandidates-1)]) {
+        candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>%
+                                       map_df(., rbind) %$% unique(id) %>%
+                                       setdiff(., bsp$checks@id)))
       }
     }
-    candidates <- unique(candidates)
   } else {
     candidates <- records[[bsp$stageToGenotype]] %>%
       # select the "id" clones from the stage that the clones are genotyped
-      tail(., n =1) %>% map_df(., rbind) %$% unique(id) %>%
+      tail(., n = 1) %>% map_df(., rbind) %$% unique(id) %>%
       # exclude checks
-      setdiff(., bsp$checks@id) %>% .[order(as.integer(.))]
-  }
+      setdiff(., bsp$checks@id)
     # get the progenitor candidates of the advanced trials
     if (bsp$nYrsAsCandidates > 1) {
-      for(i in c("F1", bsp$stageNames)[((match(bsp$stageToGenotype, c("F1", bsp$stageNames)) + 1):bsp$nStages)[1:(bsp$nYrsAsCandidates-1)]]) {
+      for(i in bsp$stageNames[(match(bsp$stageToGenotype, bsp$stageNames) + 1 : (bsp$nYrsAsCandidates -1))]) {
         candidates <- c(candidates, (records[[i]] %>%
                                        # Selecting the last year of the stage "i"
                                        tail(., n = 1) %>%
@@ -61,6 +54,15 @@ popImprovByParentSel <- function(records, bsp, SP){
                                        unique(id) %>%
                                        # exclude checks
                                        setdiff(., bsp$checks@id))) %>% .[order(as.integer(.))]
+        }
+    }
+  }
+  # Which phenotypes can be included for model training?
+  ### Current year phenotypes?
+  trainRec <- records
+  if (!bsp$useCurrentPhenoTrain) {
+    for (stage in bsp$stageNames){
+      trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
     }
   }
   # How many additional individuals to use as training?
@@ -69,27 +71,27 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## Drawn from the most recent cycles according to "nTrainPopCycles"
   ## Potentially subsampled according to "maxTrainingPopSize"
   ## RmStagePhen from the bsp object allows to remove trials with no accurate information from the phenotyped lines
-  phenotypedLines<-trainRec[bsp$stageNames[!bsp$stageNames%in%bsp$RmStagePhen]] %>%
-    map(.,~tail(.,n = bsp$nTrainPopCycles)) %>%
-    bind_rows() %$%
-    unique(id) %>% .[order(as.integer(.))] %>% suppressWarnings
+  phenotypedLines <- trainRec[bsp$stageNames[!bsp$stageNames %in% bsp$RmStagePhen]] %>%
+    map(., ~tail(., n = bsp$nTrainPopCycles)) %>%
+    bind_rows %>% suppressWarnings %$%
+    unique(id) %>% .[order(as.integer(.))]
 
-  phenotypedLines_notSelCands<-setdiff(phenotypedLines, c(candidates, bsp$checks@id)) %>% .[order(as.integer(.))]
+  phenotypedLines_notSelCands <- setdiff(phenotypedLines, c(candidates, bsp$checks@id))
   ## maxTPsize is lesser of specified 'maxTrainingPopSize' and actual number of phenotyped lines not considered selection candidates
-  maxTPsize<-min(bsp$maxTrainingPopSize,length(phenotypedLines_notSelCands))
+  maxTPsize <- min(bsp$maxTrainingPopSize, length(phenotypedLines_notSelCands))
   ## Make sure checks ARE included
 
   # sample from the list of non-selection candidates that also are NOT checks
   if(!is.null(bsp$TrainingPopSel)){
-    trainingpop<-bsp$TrainingPopSel(phenotypedLines_notSelCands)
+    trainingpop<-bsp$TrainingPopSel(phenotypedLines_notSelCands, maxTPsize)
   } else {
-    trainingpop<-sample(phenotypedLines_notSelCands,
+    trainingpop <- sample(phenotypedLines_notSelCands,
                         size = maxTPsize, replace = F) %>%
       .[order(as.integer(.))]
   }
       # include the checks if you have
   if(!is.null(bsp$checks)){
-    trainingpop<-c(trainingpop,bsp$checks@id) %>%
+    trainingpop <- c(trainingpop,bsp$checks@id) %>%
       # vanity: order the ids
       .[order(as.integer(.))]
   }
@@ -104,15 +106,16 @@ popImprovByParentSel <- function(records, bsp, SP){
   # Not sure if useOptContrib will work "as is"
   if (bsp$useOptContrib){
     progeny <- optContrib(records, bsp, SP, crit)
-  } else {
+  } else { round
     # select the top nParents based
-    selectedParentIDs<-names(crit[order(crit, decreasing=T)][1:bsp$nParents]) %>%
-      sample(x = ., size = round(bsp$nParents*bsp$parentsFlowering/100, digits = 0), replace = FALSE) %>%
+    selectedParentIDs <- names(crit[order(crit, decreasing = T)][1 : bsp$nParents]) %>%
+      sample(x = ., size = round(bsp$nParents * bsp$parentsFlowering / 100), replace = FALSE) %>%
       .[order(as.integer(.))]
     # extract a pop-object of those parents
     parents <- records$F1[selectedParentIDs]
     # make crosses
-    progeny <- randCross(parents, nCrosses=bsp$nCrosses, nProgeny=bsp$nProgeny, ignoreSexes=T, simParam=SP)
+    progeny <- randCross(parents, nCrosses = bsp$nCrosses, nProgeny = bsp$nProgeny,
+                         ignoreSexes = T, simParam = SP)
   }
   # not 100% sure, but seems to store the "year" in the @fixEff slot of "progeny"
   progeny@fixEff <- rep(as.integer(max(records$stageOutputs$year) + 1), bsp$nSeeds)
@@ -124,9 +127,9 @@ popImprovByParentSel <- function(records, bsp, SP){
   #   stage <- as.integer(rownames(stgCyc)[i])
   #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
   # }
-    PopImprov <- popImprovOutput(records, crit, candidates, trainingpop, SP)
+  PopImprov <- popImprovOutput(records, crit, candidates, trainingpop, SP)
 
-    records$F1 <- c(records$F1, progeny)
+  records$F1 <- c(records$F1, progeny)
   records[["PopImprov"]] <- rbind(records[["PopImprov"]], PopImprov)
   return(records)
 }
