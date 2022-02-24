@@ -27,7 +27,6 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
   # Calculate the selection criterion. selCritPipeAdv has to be given in bsp
   candidates <- records$F1@id
   selCrit <- bsp$selCritPipeAdv(records, candidates, bsp, SP)
-print("Pass 1")
   # Make summary for the incoming F1s
   year <- max(records$stageOutputs$year)+1 # Add a year relative to last year
   nF1 <- bsp$nCrosses * bsp$nProgeny
