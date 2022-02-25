@@ -49,6 +49,18 @@ specifyBSP(
 )
 }
 \arguments{
+\item{schemeDF}{data.frame columns: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
+\itemize{
+ \item \code{stageNames}: Vector of number of number of entries in each stage
+ \item \code{nReps}: Vector of number of reps used in each stage
+ \item \code{nLocs}: Vector of number of locations used in each stage
+ \item \code{nChks}: Vector of number of checks used in each stage. Checks are replicated the same as experimental entries
+ \item \code{nEntries}: Vector of number of number of entries in each stage
+ \item \code{entryToChkRatio}: How many entry plots do you have per check plot
+ \item \code{errVars}: Vector of error variances estimated from historical data
+ \item \code{trainingPopCycles}: How many cycles back to keep records from each stage in the training population. More cycles means bigger training  population but also more distant from the selection candidates. Fewer cycles means the simulation runs faster
+ }}
+
 \item{nChr}{integer number of chromosomes for the species}
 
 \item{effPopSize}{numeric historic effective population size for the species}
@@ -87,7 +99,7 @@ specifyBSP(
 
 \item{nProgeny}{integer how many progeny per cross}
 
-\item{parentsFlowering}{numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection default 100%}
+\item{parentsFlowering}{numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection default 100\%}
 
 \item{usePolycrossNursery}{T/F. Whether to use a polycross nursery. If it is used, nSeeds are made using completely random mating}
 
@@ -131,7 +143,4 @@ Ideally this is useful for programmatically varying breeding schemes.
 }
 \details{
 All arguments are exactly as specified in the control files. Main exception is schemeDF, which is just a tibble() or data.frame version of the set of bsp arguments which are vectors (giving values for each breeding stage). Columns must have names exactly as in the corresponding arguments in control file: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
-}
-\examples{
-
 }

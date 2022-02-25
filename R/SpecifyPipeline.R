@@ -233,8 +233,9 @@ calculateChkReps <- function(bsp){
 #'  \item \code{entryToChkRatio}: How many entry plots do you have per check plot
 #'  \item \code{errVars}: Vector of error variances estimated from historical data
 #'  \item \code{trainingPopCycles}: How many cycles back to keep records from each stage in the training population. More cycles means bigger training  population but also more distant from the selection candidates. Fewer cycles means the simulation runs faster
+#'  }
 #' @param nParents integer number of parents to cross
-#' @param parentsFlowering numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection default 100%
+#' @param parentsFlowering numeric ratio of parents that flowering in a crossing block. It samples parents after it's selection default 100\%
 #' @param nCrosses integer how many crosses to make
 #' @param nProgeny integer how many progeny per cross
 #' @param useOptContrib logical whether to use optimal contributions
@@ -269,13 +270,8 @@ calculateChkReps <- function(bsp){
 #' @param nClonesToNCRP Number of clones that will be sent to NCRP for potential variety release
 #' @param phenoF1toStage1 T/F. Parameters to control how seeds are moved from F1 to the Stage 1 trial
 #' @param errVarPreStage1 Parameters to control how seeds are moved from F1 to the Stage 1 trial
-#'
 #' @return a named list of of the parameters to specify a breeding scheme simulation
-#'
 #' @details All arguments are exactly as specified in the control files. Main exception is schemeDF, which is just a tibble() or data.frame version of the set of bsp arguments which are vectors (giving values for each breeding stage). Columns must have names exactly as in the corresponding arguments in control file: stageNames, nReps, nLocs, nChks, nEntries, entryToChkRatio, errVars
-#'
-#' @examples
-#'
 #' @export
 specifyBSP <- function(schemeDF,
                        nChr,effPopSize,quickHaplo=FALSE,

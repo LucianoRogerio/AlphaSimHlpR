@@ -198,8 +198,6 @@ parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
 #'   individuals that have been phenotyped. The GRM also includes the
 #'   unphenotyped new F1 individuals in records[[1]]
 #'
-#' @examples
-
 #' @export
 make_grm <- function(records, indivs2keep, bsp, SP, grmType="add"){
   return(genomicMateSelectR::kinship(pullSnpGeno(c(records$F1,bsp$checks)[indivs2keep], simParam=SP), type = grmType)) }

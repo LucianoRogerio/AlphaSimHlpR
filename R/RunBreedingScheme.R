@@ -9,14 +9,11 @@
 #' @param populationImprovement Function to improve the breeding population and select parents to initiate the next cycle of the breeding scheme
 #' @param bsp  A list of breeding scheme parameters.
 #' @return A \code{records} object containing the phenotypic records retained of the breeding scheme
-#' 
+#'
 #' @details A wrapper to initiate the breeding program then iterate cycles of product pipeline and population improvement
-#' 
-#' @examples
-
 #' @export
 runBreedingScheme <- function(replication=NULL, nCycles=2, initializeFunc, productPipeline, populationImprovement, bsp){
-  
+
   on.exit(expr={print(traceback()); saveRDS(mget(ls()), file="~/runBreedingScheme.rds")})
 
   cat("******", replication, "\n")
