@@ -362,6 +362,7 @@ specifyBSP <- function(schemeDF,
 #' DONE nCyclesToKeepRecords=max(nStages+1, 5)
 #' DONE nCyclesToRun=nCyclesToKeepRecords+1
 #' DONE selCritPipeAdv=selCritPopImprov=selCritIID
+#' @export
 calcDerivedParms <- function(bsp){
   # Function to check if a parameter has no value
   nv <- function(parm){
