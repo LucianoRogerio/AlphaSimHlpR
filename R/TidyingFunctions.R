@@ -14,20 +14,20 @@
 removeOldestCyc <- function(records, bsp){
   nCyclesToKeepRecords <- bsp$nCyclesToKeepRecords
   # Remove the phenotypic records that are older
-  for (i in 1 + 1:bsp$nStages){
+  for (i in bsp$stageNames){
     nCycStage <- length(records[[i]])
     if (nCycStage > nCyclesToKeepRecords){
-      records[[i]] <- records[[i]][-(1:(nCycStage-nCyclesToKeepRecords))]
+      records[[i]] <- records[[i]][-1]
     }
   }
   # List the id of the individuals remaining
   allID <- NULL
-  for (i in 1:length(records[[2]])) allID <- c(allID, records[[2]][[i]]$id)
+  for (i in 1:length(records[[2]])) allID <- c(allID, records[[2]][[i]]$id) # make this part work better
   for (i in 1 + 2:bsp$nStages) allID <- c(allID, records[[i]][[1]]$id)
   allID <- unique(allID)
   if (!is.null(bsp$checks)) allID <- setdiff(allID, bsp$checks@id)
   allID <- allID[order(as.integer(allID))]
-  records[[1]] <- records[[1]][allID]
+  records$F1 <- records$F1[allID]
   return(records)
 }
 

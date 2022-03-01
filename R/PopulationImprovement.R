@@ -245,7 +245,8 @@ trainPopSelHRep <- function(phenotypedLines_notSelCands, maxTPsize) {
 #' @param crit Named vector of selection criterion to be maximized
 #' @param candidates Character vector of ids of the candidates to be parents
 #' @param trainingpop Character vector of ids of the training population selected to predict the candidates
-#' @param SP The AlphaSimR SimParam object
+#' @param SP The AlphaSimR Simulation Parameters object
+#' @param bsp The AlphaSimHlpR Simulation Parameters object
 #' @return A tibble with whatever information from the parent selection to improve the breeding population you want to store for analysis after simulation is done
 #' @export
 popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
@@ -256,8 +257,10 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
                         no = "t")) %>%
     arrange(as.integer(id))
   InfoF1 <- tibble(id = records$F1@id,
-                       bv = bv(records$F1, simParam = SP),
-                       gv = gv(records$F1))
+                   year = records$F1@fixEff,
+                   stage = as.integer(max(records$stageOutputs$year, na.rm = TRUE)) - year +1,
+                   bv = bv(records$F1, simParam = SP),
+                   gv = gv(records$F1))
 
   GData <- InfoParentSel %>% left_join(InfoF1, by = "id")
 

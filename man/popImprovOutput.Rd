@@ -15,7 +15,9 @@ popImprovOutput(records, crit, candidates, trainingpop, SP)
 
 \item{trainingpop}{Character vector of ids of the training population selected to predict the candidates}
 
-\item{SP}{The AlphaSimR SimParam object}
+\item{SP}{The AlphaSimR Simulation Parameters object}
+
+\item{bsp}{The AlphaSimHlpR Simulation Parameters object}
 }
 \value{
 A tibble with whatever information from the parent selection to improve the breeding population you want to store for analysis after simulation is done
