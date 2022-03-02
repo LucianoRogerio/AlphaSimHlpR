@@ -29,7 +29,8 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## only individuals that have been genotyped in the last "nYrsAsCandidates"
   if(bsp$stageToGenotype == "F1"){
     NrecentProgenySelCands <- (bsp$nProgeny * bsp$nCrosses)
-    candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands) %>% unique
+    candidates <- records$F1@id %>% tail(., n = NrecentProgenySelCands) %>%
+      unique %>% .[order(as.integer(.))]
     if (bsp$nYrsAsCandidates > 1) {
       for(i in bsp$stageNames[1 : (bsp$nYrsAsCandidates-1)]) {
         candidates <- c(candidates, (records[[i]] %>% tail(., n = 1) %>%
@@ -42,7 +43,7 @@ popImprovByParentSel <- function(records, bsp, SP){
       # select the "id" clones from the stage that the clones are genotyped
       tail(., n = 1) %>% map_df(., rbind) %$% unique(id) %>%
       # exclude checks
-      setdiff(., bsp$checks@id)
+      setdiff(., bsp$checks@id)  %>% .[order(as.integer(.))]
     # get the progenitor candidates of the advanced trials
     if (bsp$nYrsAsCandidates > 1) {
       for(i in bsp$stageNames[(match(bsp$stageToGenotype, bsp$stageNames) + 1 : (bsp$nYrsAsCandidates -1))]) {
@@ -61,7 +62,7 @@ popImprovByParentSel <- function(records, bsp, SP){
   ### Current year phenotypes?
   trainRec <- records
   if (!bsp$useCurrentPhenoTrain) {
-    for (stage in bsp$stageNames){
+    for (stage in bsp$stageNames[!bsp$stageNames %in% bsp$RmStagePhen]){
       trainRec[[stage]] <- trainRec[[stage]][-length(trainRec[[stage]])]
     }
   }
@@ -102,13 +103,14 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## available pheno records (in "trainRec") for any of the "candidates"
   ## will be automatically included in predictions
   crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
+  critCand <- crit[names(crit) %in% candidates]
 
   # Not sure if useOptContrib will work "as is"
   if (bsp$useOptContrib){
-    progeny <- optContrib(records, bsp, SP, crit)
-  } else { round
+    progeny <- optContrib(records, bsp, SP, critCand)
+  } else {
     # select the top nParents based
-    selectedParentIDs <- names(crit[order(crit, decreasing = T)][1 : bsp$nParents]) %>%
+    selectedParentIDs <- names(critCand[order(critCand, decreasing = T)][1 : bsp$nParents]) %>%
       sample(x = ., size = round(bsp$nParents * bsp$parentsFlowering / 100), replace = FALSE) %>%
       .[order(as.integer(.))]
     # extract a pop-object of those parents
