@@ -252,7 +252,7 @@ trainPopSelHRep <- function(phenotypedLines_notSelCands, maxTPsize) {
 popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
   InfoParentSel <- tibble(id = names(crit),
                           gebv = crit) %>%
-    mutate(pop = ifelse(test = names(crit) %in% candidates,
+    mutate(pop = ifelse(test = id %in% candidates,
                         yes = "c",
                         no = "t")) %>%
     arrange(as.integer(id))
@@ -264,8 +264,9 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
 
   GData <- InfoParentSel %>% left_join(InfoF1, by = "id")
 
+  bredValMean <- mean(GData[GData$pop == "c",]$bv, na.rm = TRUE)
+  bredValSD <- sd(GData[GData$pop == "c",]$bv, na.rm = TRUE)
   genValMean <- mean(GData[GData$pop == "c",]$gv, na.rm = TRUE)
-
   genValSD <- sd(GData[GData$pop == "c",]$gv, na.rm = TRUE)
 
   if(all(is.na(GData[GData$pop == "c", "gebv"]))) {
@@ -280,9 +281,11 @@ return(tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
               cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
               first = first(candidates),
               last = last(candidates),
-              grmSize = length(union(candidates,trainingpop)),
+              grmSize = length(c(candidates,trainingpop)),
               grmData = list(GData),
               accAtSel = accAtSel,
+              bredValMean = bredValMean,
+              bredValSD = bredValSD,
               genValMean = genValMean,
               genValSD = genValSD))
 }
