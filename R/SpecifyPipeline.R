@@ -247,6 +247,7 @@ calculateChkReps <- function(bsp){
 #' @param selCritPopImprov function used to determine sel crit for pop improv
 #' @param nTrainPopCycles draw training pop lines only from this number of recent cycles.
 #' @param nYrsAsCandidates candidates for selection only from this number of recent years
+#' @param nYrsRec integer number that inform how long it takes at the recombination phase, or for the crossing block to obtain the among of seeds to plant a seedlings trial.
 #' @param maxTrainingPopSize From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}), subsample this number of lines for training data.
 #' @param TrainPopSel function used to determine the training population for pop improv
 #' @param nChr integer number of chromosomes for the species
@@ -294,6 +295,7 @@ specifyBSP <- function(schemeDF,
                        nTrainPopCycles,
                        nYrsAsCandidates,
                        maxTrainingPopSize,
+                       nYrsRec=2,
                        modelType=NULL,
                        propSel=0.05,
                        crossSelCrit=NULL,
@@ -330,7 +332,7 @@ specifyBSP <- function(schemeDF,
                   "nCyclesToKeepRecords",
                   "selCritPipeAdv", "selCritPopImprov",
                   "TrainPopSel",
-                  "nTrainPopCycles","nYrsAsCandidates","maxTrainingPopSize",
+                  "nTrainPopCycles","nYrsAsCandidates","nYrsRec","maxTrainingPopSize",
                   "modelType","propSel","crossSelCrit","nCrossPredCores")
   pipe_parms %<>%
     `names<-`(.,.) %>%

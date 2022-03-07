@@ -42,6 +42,7 @@ specifyBSP(
   nTrainPopCycles,
   nYrsAsCandidates,
   maxTrainingPopSize,
+  nYrsRec = 2,
   modelType = NULL,
   propSel = 0.05,
   crossSelCrit = NULL,
@@ -132,6 +133,8 @@ specifyBSP(
 \item{nYrsAsCandidates}{candidates for selection only from this number of recent years}
 
 \item{maxTrainingPopSize}{From the lines in the most recent cycles (indicated by \code{nTrainPopCycles}), subsample this number of lines for training data.}
+
+\item{nYrsRec}{integer number that inform how long it takes at the recombination phase, or for the crossing block to obtain the among of seeds to plant a seedlings trial.}
 }
 \value{
 a named list of of the parameters to specify a breeding scheme simulation

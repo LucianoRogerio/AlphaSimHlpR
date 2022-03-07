@@ -103,8 +103,22 @@ popImprovByParentSel <- function(records, bsp, SP){
   ## available pheno records (in "trainRec") for any of the "candidates"
   ## will be automatically included in predictions
   crit <- bsp$selCritPopImprov(trainRec, candidates, trainingpop, bsp, SP)
-  critCand <- crit[names(crit) %in% candidates]
+  ### set critCand into some data structure
+  ### return from the function
 
+  ### Saves the candidates results for the next
+  CrossingBlock <- popImprovOutput(records, crit, candidates, trainingpop, SP)
+
+  ## Save the results of the genomic prediction at the CrossingBlock tibble object in records
+  records[["CrossingBlock"]] <- rbind(records[["CrossingBlock"]], CrossingBlock)
+
+  ## get the progenitors related to the F1 of the next year
+  critCand <- records[["CrossingBlock"]] %>% tail(n = (bsp$nYrsRec + 1)) %>% head(n = 1) %>%
+    dplyr::select(grmData) %>% tidyr::unnest(cols = "grmData") %>% dplyr::filter(pop == "c") %>%
+    .$gebv
+
+  ### Part of "makeF1s" function
+  ### retrieve critCand from data structure and do this
   # Not sure if useOptContrib will work "as is"
   if (bsp$useOptContrib){
     progeny <- optContrib(records, bsp, SP, critCand)
@@ -129,10 +143,9 @@ popImprovByParentSel <- function(records, bsp, SP){
   #   stage <- as.integer(rownames(stgCyc)[i])
   #   records$stageOutputs$nContribToPar[[strtStgOut + stage]] <- tibble(cycle=as.integer(colnames(stgCyc)), nContribToPar=stgCyc[i,])
   # }
-  PopImprov <- popImprovOutput(records, crit, candidates, trainingpop, SP)
+
 
   records$F1 <- c(records$F1, progeny)
-  records[["PopImprov"]] <- rbind(records[["PopImprov"]], PopImprov)
   return(records)
 }
 
