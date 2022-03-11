@@ -42,7 +42,7 @@ specifyBSP(
   nTrainPopCycles,
   nYrsAsCandidates,
   maxTrainingPopSize,
-  nYrsRec = 2,
+  nYrsRec = 1,
   modelType = NULL,
   propSel = 0.05,
   crossSelCrit = NULL,
