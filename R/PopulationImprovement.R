@@ -270,9 +270,13 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
   genValSD <- sd(GData[GData$pop == "c",]$gv, na.rm = TRUE)
 
   if(all(is.na(GData[GData$pop == "c", "gebv"]))) {
-    accAtSel <- NA
+    accPgSel <- NA
+    accClSel <- NA
 } else {
-  accAtSel <- cor(x = GData[GData$pop == "c",]$bv,
+  accPgSel <- cor(x = GData[GData$pop == "c",]$bv,
+                  y = GData[GData$pop == "c",]$gebv,
+                  use = "complete.obs")
+  accClSel <- cor(x = GData[GData$pop == "c",]$gv,
                   y = GData[GData$pop == "c",]$gebv,
                   use = "complete.obs")
   }
@@ -283,7 +287,8 @@ return(tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
               last = last(candidates),
               grmSize = length(c(candidates,trainingpop)),
               grmData = list(GData),
-              accAtSel = accAtSel,
+              accPgSel = accPgSel,
+              accClSel = accClSel,
               bredValMean = bredValMean,
               bredValSD = bredValSD,
               genValMean = genValMean,

@@ -45,13 +45,25 @@ productPipeline <- function(records, bsp, SP){
   # Analyze the most-recent F1s
   newF1Idx <- nGenoRec - nF1 + 1:nF1
   id <- records$F1[newF1Idx]@id
-  records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
+  records$stageOutputs <- records$stageOutputs %>%
+    bind_rows(stageOutputs(id=id,
+                           f1=records$F1,
+                           selCrit=selCrit,
+                           stage=0,
+                           year=year,
+                           bsp=bsp))
   # Will be added to the phenotype records
   toAdd <- list()
   for (stage in 1:bsp$nStages){
     # Make a summary for this stage
     id <- last(records[[stage+1]])$id[1:bsp$nEntries[stage]] %>% .[!is.na(.)]
-    records$stageOutputs <- records$stageOutputs %>% bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=stage, year=year, bsp=bsp))
+    records$stageOutputs <- records$stageOutputs %>%
+      bind_rows(stageOutputs(id=id,
+                             f1=records$F1,
+                             selCrit=selCrit,
+                             stage=stage,
+                             year=year,
+                             bsp=bsp))
 
     if (stage == 1){ # Stage 1 different: no phenotypes but full Pop-class
       # Use phenotypes to select the F1 going into Stage 1?
