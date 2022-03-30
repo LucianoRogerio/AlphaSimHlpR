@@ -20,14 +20,9 @@ removeOldestCyc <- function(records, bsp){
       records[[i]] <- records[[i]][-1]
     }
   }
-  # List the id of the individuals remaining
-  allID <- NULL
-  for (i in 1:length(records[[2]])) allID <- c(allID, records[[2]][[i]]$id) # make this part work better
-  for (i in 1 + 2:bsp$nStages) allID <- c(allID, records[[i]][[1]]$id)
-  allID <- unique(allID)
-  if (!is.null(bsp$checks)) allID <- setdiff(allID, bsp$checks@id)
-  allID <- allID[order(as.integer(allID))]
-  records$F1 <- records$F1[allID]
+  # Remove the individuals older than nCyclesToKeepRecords
+  MaxFF <- max(records$F1@fixEff, na.rm = T) - nCyclesToKeepRecords
+  records$F1 <- records$F1[records$F1@fixEff > MaxFF]
   return(records)
 }
 
