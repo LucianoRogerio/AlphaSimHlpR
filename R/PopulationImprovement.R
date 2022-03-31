@@ -249,20 +249,35 @@ trainPopSelHRep <- function(phenotypedLines_notSelCands, maxTPsize) {
 #' @param bsp The AlphaSimHlpR Simulation Parameters object
 #' @return A tibble with whatever information from the parent selection to improve the breeding population you want to store for analysis after simulation is done
 #' @export
-popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
+popImprovOutput <- function(records, crit, candidates, trainingpop, SP, bsp) {
   InfoParentSel <- tibble(id = names(crit),
                           gebv = crit) %>%
     mutate(pop = ifelse(test = id %in% candidates,
                         yes = "c",
                         no = "t")) %>%
     arrange(as.integer(id))
+
+  ids <- InfoParentSel$id[InfoParentSel$pop == "c"]
+  length(ids)
+  if(max(records$stageOutputs$year, na.rm = T) >= (bsp$nYrsRec + 1)){
+    yearLtsCycle <- max(records$stageOutputs$year, na.rm = T) - (bsp$nYrsRec + 1)
+    ParentLastCycle <- records$F1[records$F1@fixEff == yearLtsCycle]@id
+
+
+    ids <- unique(c(ids, ParentLastCycle)) %>% .[order(as.integer(.))]
+  }
+
   InfoF1 <- tibble(id = records$F1@id,
                    year = records$F1@fixEff,
                    stage = as.integer(max(records$stageOutputs$year, na.rm = TRUE)) - year +1,
-                   bv = bv(records$F1, simParam = SP),
-                   gv = gv(records$F1))
+                   #bv = bv(records$F1, simParam = SP),
+                   gv = gv(records$F1)[,1])
 
-  GData <- InfoParentSel %>% left_join(InfoF1, by = "id")
+  InfoPg <- tibble(id = records$F1[ids]@id,
+                   bv = bv(records$F1[ids], simParam = SP)[,1])
+  Info <- InfoF1 %>% left_join(InfoPg, by = "id")
+
+  GData <- InfoParentSel %>% left_join(Info, by = "id")
 
   bredValMean <- mean(GData[GData$pop == "c",]$bv, na.rm = TRUE)
   bredValSD <- sd(GData[GData$pop == "c",]$bv, na.rm = TRUE)
@@ -273,22 +288,27 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP) {
     accPgSel <- NA
     accClSel <- NA
 } else {
-  accPgSel <- cor(x = GData[GData$pop == "c",]$bv,
-                  y = GData[GData$pop == "c",]$gebv,
-                  use = "complete.obs")
-  accClSel <- cor(x = GData[GData$pop == "c",]$gv,
-                  y = GData[GData$pop == "c",]$gebv,
-                  use = "complete.obs")
+  accPgSel <- cor(x = GData[GData$pop == "c",c("bv", "gebv")],
+                  use = "complete.obs")[1,2]
+
+  accClSel <- matrix(NA, ncol = bsp$nStages)
+  colnames(accClSel) <- bsp$stageNames
+  pos <- match(bsp$stageToGenotype, bsp$stageNames)
+  for(stage in bsp$stageNames[pos:bsp$nStages]){
+    StgId <- last(records[[stage]]) %$% id %>% setdiff(., bsp$checks@id)
+    try(accClSel[1, stage] <- cor(x = GData[GData$id %in% StgId,c("gv", "gebv")],
+                              use = "complete.obs")[1,2], silent = TRUE)
+    }
   }
 
-return(tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
+  return(tibble(Year = as.integer(max(records$stageOutputs$year, na.rm = TRUE)),
               cycle = as.integer(max(records$stageOutputs$cycle, na.rm = TRUE)),
               first = first(candidates),
               last = last(candidates),
-              grmSize = length(c(candidates,trainingpop)),
+              grmSize = nrow(GData),
               grmData = list(GData),
               accPgSel = accPgSel,
-              accClSel = accClSel,
+              accClSel = list(accClSel),
               bredValMean = bredValMean,
               bredValSD = bredValSD,
               genValMean = genValMean,

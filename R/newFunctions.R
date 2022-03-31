@@ -107,7 +107,7 @@ popImprovByParentSel <- function(records, bsp, SP){
   ### return from the function
 
   ### Saves the candidates results for the next
-  CrossingBlock <- popImprovOutput(records, crit, candidates, trainingpop, SP)
+  CrossingBlock <- popImprovOutput(records, crit, candidates, trainingpop, SP, bsp)
 
   ## Save the results of the genomic prediction at the CrossingBlock tibble object in records
   records[["CrossingBlock"]] <- rbind(records[["CrossingBlock"]], CrossingBlock)
@@ -280,7 +280,7 @@ parentSelCritBLUP <- function(records, candidates, trainingpop, bsp, SP){
   indivs2keep<-union(candidates,trainingpop)
   phenoDF <- framePhenoRec(records, bsp)
   # Remove individuals not designated as candidates or trainingpop
-  phenoDF <- phenoDF %>% filter(id %in% indivs2keep, !stage %in% bsp$RmStagePhen)
+  phenoDF <- phenoDF %>% filter(!stage %in% bsp$RmStagePhen)
   crit <- iidPhenoEval(phenoDF)
   # exclude the checks from consideration as candidates
   crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]

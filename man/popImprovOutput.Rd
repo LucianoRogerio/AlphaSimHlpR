@@ -4,7 +4,7 @@
 \alias{popImprovOutput}
 \title{popImprovOutput function}
 \usage{
-popImprovOutput(records, crit, candidates, trainingpop, SP)
+popImprovOutput(records, crit, candidates, trainingpop, SP, bsp)
 }
 \arguments{
 \item{records}{The breeding program \code{records} object. See \code{fillPipeline} for details}

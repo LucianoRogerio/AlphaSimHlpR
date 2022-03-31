@@ -46,36 +46,41 @@ productPipeline <- function(records, bsp, SP){
   newF1Idx <- nGenoRec - nF1 + 1:nF1
   id <- records$F1[newF1Idx]@id
   records$stageOutputs <- records$stageOutputs %>%
-    bind_rows(stageOutputs(id=id,
-                           f1=records$F1,
-                           selCrit=selCrit,
-                           stage=0,
-                           year=year,
-                           bsp=bsp))
+    dplyr::bind_rows(stageOutputs(id=id,
+                                  f1=records$F1,
+                                  selCrit=selCrit,
+                                  stage=0,
+                                  year=year,
+                                  bsp=bsp))
+
   # Will be added to the phenotype records
   toAdd <- list()
   for (stage in 1:bsp$nStages){
     # Make a summary for this stage
     id <- last(records[[stage+1]])$id[1:bsp$nEntries[stage]] %>% .[!is.na(.)]
     records$stageOutputs <- records$stageOutputs %>%
-      bind_rows(stageOutputs(id=id,
-                             f1=records$F1,
-                             selCrit=selCrit,
-                             stage=stage,
-                             year=year,
-                             bsp=bsp))
+      dplyr::bind_rows(stageOutputs(id=id,
+                                    f1=records$F1,
+                                    selCrit=selCrit,
+                                    stage=stage,
+                                    year=year,
+                                    bsp=bsp))
 
-    if (stage == 1){ # Stage 1 different: no phenotypes but full Pop-class
+    if (stage == 1){
+      # Stage 1 different: no phenotypes but full Pop-class
       # Use phenotypes to select the F1 going into Stage 1?
-      if (bsp$phenoF1toStage1){ # Use phenotypes to choose what goes to Stage 1
+      if (bsp$phenoF1toStage1){
+        # Use phenotypes to choose what goes to Stage 1
         phenoF1 <- setPheno(records$F1[newF1Idx], varE=bsp$errVarPreStage1, onlyPheno=T, simParam=SP)
-        indToAdv <- records$F1@id[nGenoRec - nF1 + (phenoF1 %>% order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
-      } else{
+        indToAdv <- records$F1@id[nGenoRec - nF1 + (phenoF1 %>%
+                                                      order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
+      } else {
         # Do the F1 have genotypic values that could be used?
         if (selCrit[newF1Idx] %>% is.na %>% all){ # Choose at random
           indToAdv <- records$F1@id[nGenoRec - nF1 + sort(sample(nF1, bsp$nEntries[stage]))]
-        } else{ # Use selCrit
-          indToAdv <- records$F1@id[nGenoRec - nF1 + (selCrit[newF1Idx] %>% order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
+        } else { # Use selCrit
+          indToAdv <- records$F1@id[nGenoRec - nF1 + (selCrit[newF1Idx] %>%
+                                                        order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
         }
       }
     } else{ # Beyond stage 1
@@ -95,11 +100,11 @@ productPipeline <- function(records, bsp, SP){
       varE <- bsp$gxyVar + (bsp$gxlVar + bsp$gxyxlVar + bsp$errVars[stage] / bsp$chkReps[stage]) / bsp$nLocs[stage]
       chkPheno <- setPheno(bsp$checks[1:bsp$nChks[stage]], varE=varE, reps=1, simParam=SP)
       chkRec <- phenoRecFromPop(chkPheno, bsp, stage, checks=T)
-      phenoRec <- bind_rows(phenoRec, chkRec)
+      phenoRec <- dplyr::bind_rows(phenoRec, chkRec)
     }
     toAdd <- c(toAdd, list(phenoRec))
   }#END 1:nStages
-  for (stage in 1 + 1:bsp$nStages){
+  for (stage in (1 + 1:bsp$nStages)){
     records[[stage]] <- c(records[[stage]], toAdd[stage-1])
   }
 

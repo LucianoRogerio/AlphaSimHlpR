@@ -27,46 +27,59 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
   # Calculate the selection criterion. selCritPipeAdv has to be given in bsp
   candidates <- records$F1@id
   selCrit <- bsp$selCritPipeAdv(records, candidates, bsp, SP)
+
   # Make summary for the incoming F1s
   year <- max(records$stageOutputs$year)+1 # Add a year relative to last year
   nF1 <- bsp$nCrosses * bsp$nProgeny
   nGenoRec <- nInd(records$F1)
-  # Analyze the most-recent F1s
+  # Analyze and save the information of the most-recent F1s
   newF1Idx <- nGenoRec - nF1 + 1:nF1
   id <- records$F1[newF1Idx]@id
   records$stageOutputs <- records$stageOutputs %>%
-      dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit, stage=0, year=year, bsp=bsp))
+      dplyr::bind_rows(stageOutputs(id=id,
+                                    f1=records$F1,
+                                    selCrit=selCrit,
+                                    stage=0,
+                                    year=year,
+                                    bsp=bsp))
 
-  # Will be added to the phenotype records
+  # The next VDP stages will be added to the phenotype records phenoRec
   toAdd <- list()
-  for(stage in bsp$stageNames){
-    # Make a summary for this stage
+  for (stage in bsp$stageNames){
+    # Make a summary of the last trial for this stage
     id <- last(records[[stage]])$id %>% .[!. %in% bsp$checks@id]
-    records$stageOutputs<-records$stageOutputs %>%
-      dplyr::bind_rows(stageOutputs(id=id, f1=records$F1, selCrit=selCrit,
-                                            stage=which(bsp$stageNames==stage),
-                                            year=year, bsp=bsp))
-    if(which(bsp$stageNames==stage) == 1){
+    records$stageOutputs <- records$stageOutputs %>%
+      dplyr::bind_rows(stageOutputs(id=id,
+                                    f1=records$F1,
+                                    selCrit=selCrit,
+                                    stage=which(bsp$stageNames==stage),
+                                    year=year,
+                                    bsp=bsp))
+
+    # Start the selection for the next stage
+    if (which(bsp$stageNames==stage) == 1){
       # Stage 1 different: no phenotypes but full Pop-class
       # Use phenotypes to select the F1 going into Stage 1?
-      if(bsp$phenoF1toStage1){ # Use phenotypes to choose what goes to Stage 1
+      if (bsp$phenoF1toStage1){
+        # Use phenotypes to choose which clones from F1 will go to Stage 1
         phenoF1 <- setPheno(records$F1[newF1Idx], varE=bsp$errVarPreStage1, onlyPheno=T, simParam=SP)
         indToAdv <- records$F1@id[nGenoRec - nF1 + (phenoF1 %>%
-                                                      order(decreasing=T))[1:bsp$nEntries[stage]] %>% sort]
+                                                      order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
       } else {
         # Do the F1 have genotypic values that could be used?
-        if(selCrit[newF1Idx] %>% is.na %>% all){ # Choose at random
+        if (selCrit[newF1Idx] %>% is.na %>% all){ # Choose at random
           indToAdv <- records$F1@id[nGenoRec - nF1 + sort(sample(nF1, bsp$nEntries[stage]))]
         } else { # Use selCrit
           indToAdv <- records$F1@id[nGenoRec - nF1 + (selCrit[newF1Idx] %>%
-                                                        order(decreasing=T))[1:bsp$nEntries[stage]] %>% sort]
+                                                        order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
         }
       }
     } else { # Beyond stage 1
       # Don't allow checks to be advanced: use 1:bsp$nEntries[stage-1]
-      id <- last(records[[bsp$stageNames[which(bsp$stageNames==stage) -1]]])$id %>% .[!. %in% bsp$checks@id]
+      id <- last(records[[bsp$stageNames[which(bsp$stageNames==stage)-1]]])$id %>% .[!. %in% bsp$checks@id]
       selCritToAdv <- selCrit[id]
-      indToAdv<-selCritToAdv %>% sort(.,decreasing = T) %>% .[1:bsp$nEntries[stage]] %>% names
+      indToAdv <- selCritToAdv %>% sort(.,decreasing = T) %>%
+        .[1:bsp$nEntries[stage]] %>% names %>% .[order(as.integer(.))]
     }
 
     entries <- records$F1[indToAdv]
@@ -82,9 +95,11 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
       phenoRec <- dplyr::bind_rows(phenoRec, chkRec)
     }
     toAdd <- c(toAdd, list(phenoRec))
+
   }#END 1:nStages
-  for(stage in bsp$stageNames){
-    records[[stage]] <- c(records[[stage]], toAdd[which(bsp$stageNames==stage)])
+  stage <- 2
+  for (stage in (1 + 1:bsp$nStages)){
+    records[[stage]] <- c(records[[stage]], toAdd[stage-1])
   }
 
   # Remove old records if needed
