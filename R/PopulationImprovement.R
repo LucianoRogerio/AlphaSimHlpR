@@ -259,13 +259,12 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP, bsp) {
 
   ids <- InfoParentSel$id[InfoParentSel$pop == "c"]
   length(ids)
-  if(max(records$stageOutputs$year, na.rm = T) >= (bsp$nYrsRec + 1)){
-    yearLtsCycle <- max(records$stageOutputs$year, na.rm = T) - (bsp$nYrsRec + 1)
-    ParentLastCycle <- records$F1[records$F1@fixEff == yearLtsCycle]@id
-
-
-    ids <- unique(c(ids, ParentLastCycle)) %>% .[order(as.integer(.))]
-  }
+### Removed from the function to predict the True Breeding values only with the new population
+#  if(max(records$stageOutputs$year, na.rm = T) >= (bsp$nYrsRec + 1)){
+#    yearLtsCycle <- max(records$stageOutputs$year, na.rm = T) - (bsp$nYrsRec + 1)
+#    ParentLastCycle <- records$F1[records$F1@fixEff == yearLtsCycle]@id
+#    ids <- unique(c(ids, ParentLastCycle)) %>% .[order(as.integer(.))]
+#  }
 
   InfoF1 <- tibble(id = records$F1@id,
                    year = records$F1@fixEff,
