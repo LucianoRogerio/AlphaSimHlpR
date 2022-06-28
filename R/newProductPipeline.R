@@ -97,8 +97,8 @@ productPipelinePostBurnIn <- function(records, bsp, SP){
     toAdd <- c(toAdd, list(phenoRec))
 
   }#END 1:nStages
-  stage <- 2
-  for (stage in (1 + 1:bsp$nStages)){
+
+    for (stage in (1 + 1:bsp$nStages)){
     records[[stage]] <- c(records[[stage]], toAdd[stage-1])
   }
 

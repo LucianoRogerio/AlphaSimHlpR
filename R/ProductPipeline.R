@@ -83,7 +83,7 @@ productPipeline <- function(records, bsp, SP){
                                                         order(decreasing=T))[1:bsp$nEntries[stage]] %>% order]
         }
       }
-    } else{ # Beyond stage 1
+    } else { # Beyond stage 1
       # Don't allow checks to be advanced: use 1:bsp$nEntries[stage-1]
       id <- last(records[[stage]])$id[1:bsp$nEntries[stage-1]]
       selCritPop <- selCrit[id]
@@ -103,7 +103,10 @@ productPipeline <- function(records, bsp, SP){
       phenoRec <- dplyr::bind_rows(phenoRec, chkRec)
     }
     toAdd <- c(toAdd, list(phenoRec))
+
   }#END 1:nStages
+
+
   for (stage in (1 + 1:bsp$nStages)){
     records[[stage]] <- c(records[[stage]], toAdd[stage-1])
   }
