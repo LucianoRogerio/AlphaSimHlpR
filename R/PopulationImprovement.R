@@ -257,8 +257,8 @@ popImprovOutput <- function(records, crit, candidates, trainingpop, SP, bsp) {
                         no = "t")) %>%
     arrange(as.integer(id))
 
-  ids <- InfoParentSel$id[InfoParentSel$pop == "c"]
-  length(ids)
+  ids <- InfoParentSel %>% dplyr::filter(pop == "c" & id %in% records$F1@id) %>% .$id
+
 ### Removed from the function to predict the True Breeding values only with the new population
 #  if(max(records$stageOutputs$year, na.rm = T) >= (bsp$nYrsRec + 1)){
 #    yearLtsCycle <- max(records$stageOutputs$year, na.rm = T) - (bsp$nYrsRec + 1)

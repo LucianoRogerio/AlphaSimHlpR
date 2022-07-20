@@ -136,6 +136,7 @@ productPipeline <- function(records, bsp, SP){
 #' @export
 stageOutputs <- function(id, f1, selCrit, stage, year, bsp){
   stageName <- c("F1", bsp$stageNames)[stage+1]
+  id <- id[id %in% f1@id]
   f1 <- f1[id]
   selCrit <- selCrit[id]
   if (length(selCrit) == 0 | all(is.na(selCrit))){

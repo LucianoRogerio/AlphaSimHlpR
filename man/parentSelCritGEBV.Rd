@@ -33,6 +33,3 @@ Uses alternative functions \code{make_grm} and \code{gebvPhenoEval}.
 
 Accesses all individuals in \code{records} to pick the highest ones
 }
-\examples{
-
-}

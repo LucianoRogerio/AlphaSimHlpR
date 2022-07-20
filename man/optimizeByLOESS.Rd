@@ -67,6 +67,3 @@ Go back to 1.
 \details{
 A wrapper to repeatedly simulate a scheme with different budget allocations to find optimal allocations
 }
-\examples{
-
-}

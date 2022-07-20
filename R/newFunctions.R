@@ -126,7 +126,7 @@ popImprovByParentSel <- function(records, bsp, SP){
     # select the top nParents based
     selectedParentIDs <- names(critCand[order(critCand, decreasing = T)][1 : bsp$nParents]) %>%
       sample(x = ., size = round(bsp$nParents * bsp$parentsFlowering / 100), replace = FALSE) %>%
-      .[order(as.integer(.))]
+      .[order(as.integer(.))] %>% .[. %in% records$F1@id]
     # extract a pop-object of those parents
     parents <- records$F1[selectedParentIDs]
     # make crosses

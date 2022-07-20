@@ -217,7 +217,7 @@ grmPhenoEval <- function(phenoDF, grm){
     phenoDF$wgt <- 1/phenoDF$errVar # Make into weights
 
     fm <- mmer(pheno ~ 1,
-               random = ~ vs(id, Gu = grm),
+               random = ~ vsr(id, Gu = grm),
                method = "EMMA",
                rcov = ~ units,
                weights = wgt,

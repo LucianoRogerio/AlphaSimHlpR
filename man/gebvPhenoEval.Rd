@@ -23,6 +23,3 @@ Uses \code{\link[sommer]{mmer}} to implement a genomic BLUP model.
 \details{
 Given all the phenotypic records calculate the GEBV for each individual using all its records
 }
-\examples{
-
-}
