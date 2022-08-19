@@ -173,11 +173,11 @@ popImprovByParentSel <- function(records, bsp, SP){
 #' @export
 parentSelCritGEBV <- function(records, candidates, trainingpop, bsp, SP){
   # first construct the GRM
-  indivs2keep<-union(candidates,trainingpop)
+  indivs2keep <- union(candidates, trainingpop) %>% as.character
   grm <- make_grm(records, indivs2keep, bsp, SP, grmType="add")
   phenoDF <- framePhenoRec(records, bsp)
   # Remove individuals with phenotypes but who do not have geno records
-  phenoDF <- phenoDF[(phenoDF$id %in% rownames(grm) & !phenoDF$stage %in% bsp$RmStagePhen),]
+  phenoDF <- phenoDF[(phenoDF$id %in% rownames(grm) & !(phenoDF$stage %in% bsp$RmStagePhen)),]
   crit <- grmPhenoEval(phenoDF, grm)
   # exclude the checks from consideration as candidates
   crit <- crit[names(crit) %in% setdiff(indivs2keep,bsp$checks@id)]

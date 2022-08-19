@@ -218,13 +218,11 @@ grmPhenoEval <- function(phenoDF, grm){
 
     fm <- mmer(pheno ~ 1,
                random = ~ vsr(id, Gu = grm),
-               method = "EMMA",
-               rcov = ~ units,
                weights = wgt,
                data = phenoDF,
                verbose = F,
                date.warning = F)
-    blup <- fm$U[[1]][[1]]
+    blup <- fm$U$`u:id`$pheno
   }
   # Ensure output has variation: needed for optimal contributions
   if (sd(blup) == 0){
